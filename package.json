@@ -3,6 +3,9 @@
 	"version": "1.0.0",
 	"description": "",
 	"main": "app.js",
+	"jest": {
+		"setupTestFrameworkScriptFile": "./tests/setupTest.js"
+	},
 	"scripts": {
 		"start": "node server.js",
 		"dev": "nodemon server.js",

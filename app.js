@@ -6,7 +6,7 @@
  */
 
 const express = require("express");
-const productsRouter = require("./routes/productsRouter");
+const productsRouter = require("./routes/productRouter");
 
 const app = express();
 
