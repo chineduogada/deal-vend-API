@@ -10,6 +10,8 @@ const productsRouter = require("./routes/productRouter");
 
 const app = express();
 
+app.use(express.json());
+
 app.use("/api/v1/products", productsRouter);
 
 module.exports = app;

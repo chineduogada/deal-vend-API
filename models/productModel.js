@@ -7,9 +7,11 @@ const schema = new mongoose.Schema(
 			type: String,
 			trim: true,
 			required: [true, "`title` is required"],
+			minlength: [5, "`title` can be '5' or more characters"],
+			maxlength: [25, "`title` can be '25' or less characters"],
 		},
 		price: {
-			type: String,
+			type: Number,
 			trim: true,
 			required: [true, "`price` is required"],
 		},
@@ -17,12 +19,13 @@ const schema = new mongoose.Schema(
 			type: String,
 			trim: true,
 			required: [true, "`description` is required"],
+			minlength: [20, "`title` can be '20' or more characters"],
+			maxlength: [500, "`title` can be '500' or less characters"],
 		},
 		category: {
 			type: String,
-			trim: true,
 			enum: {
-				value: ["computing", "phones-and-tablets"],
+				values: ["computing", "phones-and-tablets"],
 				validate:
 					"`category` can be either 'computing' or 'phones-and-tablets'",
 			},
