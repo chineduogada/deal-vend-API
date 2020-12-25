@@ -1,16 +1,30 @@
 const Joi = require("joi");
 const Product = require("../models/productModel");
 const catchAsync = require("../utils/catchAsync");
-// const AppError = require("../utils/AppError");
+const AppError = require("../utils/AppError");
+const APIFeatures = require("../utils/APIFeatures");
 
-exports.getAllProducts = catchAsync(async (req, res, next) => {
-	res.send("all products :)");
+exports.getAllProducts = catchAsync(async (req, res) => {
+	const apiFeatures = new APIFeatures(Product.find(), req.query)
+		.filter()
+		.sort()
+		.paginate()
+		.project();
+
+	const products = await apiFeatures.Query;
+
+	res.status(200).json({
+		status: "success",
+		results: products.length,
+		data: {
+			products,
+		},
+	});
 });
 
 exports.createProduct = catchAsync(async (req, res, next) => {
 	const schema = Joi.object({
-		title: Joi.string().min(5).max(25).required(),
-
+		name: Joi.string().min(5).max(25).required(),
 		price: Joi.number().min(10).required(),
 		description: Joi.string().min(25).max(500).required(),
 		category: Joi.string()
@@ -32,9 +46,9 @@ exports.createProduct = catchAsync(async (req, res, next) => {
 	});
 	const { error } = schema.validate(req.body);
 
-	// if (error) {
-	// 	return next(new AppError(error.details[0].message, 400));
-	// }
+	if (error) {
+		return next(new AppError(error.details[0].message, 400));
+	}
 
 	const product = await Product.create(req.body);
 

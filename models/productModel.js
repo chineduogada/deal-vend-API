@@ -3,12 +3,12 @@ const slugify = require("slugify");
 
 const schema = new mongoose.Schema(
 	{
-		title: {
+		name: {
 			type: String,
 			trim: true,
-			required: [true, "`title` is required"],
-			minlength: [5, "`title` can be '5' or more characters"],
-			maxlength: [25, "`title` can be '25' or less characters"],
+			required: [true, "`name` is required"],
+			minlength: [5, "`name` can be '5' or more characters"],
+			maxlength: [50, "`name` can be '50' or less characters"],
 		},
 		price: {
 			type: Number,
@@ -101,7 +101,7 @@ const schema = new mongoose.Schema(
 );
 
 schema.virtual("slug").get(function () {
-	return slugify(this.title);
+	return slugify(this.name);
 });
 
 const Product = mongoose.model("Product", schema);

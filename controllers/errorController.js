@@ -24,12 +24,12 @@ module.exports = (err, req, res, next) => {
 	err.statusCode = err.statusCode || 500;
 	err.status = err.status || "error";
 
-	// if (process.env.NODE_ENV !== "production") {
-	// 	sendDev(err, res);
-	// } else {
-	// 	sendProd(err, res);
-	// }
+	if (process.env.NODE_ENV !== "production") {
+		sendDev(err, res);
+	} else {
+		sendProd(err, res);
+	}
 
-	sendProd(err, res);
+	// sendProd(err, res);
 };
 
