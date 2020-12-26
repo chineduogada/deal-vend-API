@@ -3,7 +3,9 @@ const AppError = require("../utils/AppError");
 const APIFeatures = require("../utils/APIFeatures");
 
 const buildQueryToCache = (req, query) => {
-	query = req.cache ? query.cache() : query;
+	console.log(req.cacheOptions);
+
+	query = req.cache ? query.cache(req.cacheOptions) : query;
 	return query;
 };
 

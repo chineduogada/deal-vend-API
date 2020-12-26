@@ -4,12 +4,15 @@ const cacheQuery = require("../middlewares/cacheQuery");
 
 router
 	.route("/")
-	.get(cacheQuery, productController.getAllProducts)
+	.get(cacheQuery({ key: "products" }), productController.getAllProducts)
 	.post(productController.createProduct);
 
 router
 	.route("/:id")
-	.get(cacheQuery, productController.getProduct)
+	.get(
+		cacheQuery(null, (req) => (req.cacheOptions = { key: req.params.id })),
+		productController.getProduct
+	)
 	.patch(productController.updateProduct)
 	.delete(productController.deleteProduct);
 

@@ -8,8 +8,10 @@ const redisClient = redis.createClient(redisUrl);
 
 const exec = mongoose.Query.prototype.exec;
 
-mongoose.Query.prototype.cache = function () {
+mongoose.Query.prototype.cache = function (options = {}) {
 	this._cache = true;
+	this._hashKey = JSON.stringify(options.key || "");
+
 	return this;
 };
 
@@ -24,8 +26,8 @@ mongoose.Query.prototype.exec = async function () {
 		collection: this.mongooseCollection.name,
 	});
 
-	redisClient.get = promisify(redisClient.get);
-	const cachedValue = await redisClient.get(key);
+	redisClient.hget = promisify(redisClient.hget);
+	const cachedValue = await redisClient.hget(this._hashKey, key);
 
 	if (cachedValue) {
 		// ************* Why this won't work fine is BCOS `this.model(<object>)` not a <array>, and `cachedValue` could be an Array ********* //
@@ -39,14 +41,14 @@ mongoose.Query.prototype.exec = async function () {
 			? cachedDoc.map(convertToDocument)
 			: convertToDocument(cachedDoc);
 
-		console.log("> SERVING DATA FROM REDIS SERVER");
+		devLog("> SERVING DATA FROM REDIS SERVER");
 		return cachedDoc;
 	}
 
 	const result = await exec.apply(this, arguments);
-	redisClient.set(key, JSON.stringify(result));
+	redisClient.hset(this._hashKey, key, JSON.stringify(result));
 
-	console.log("> SERVING DATA FROM MONGODB");
+	devLog("> SERVING DATA FROM MONGODB");
 	return result;
 };
 
