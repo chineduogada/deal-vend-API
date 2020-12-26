@@ -3,7 +3,11 @@ const productController = require("../controllers/productController");
 
 router
 	.route("/")
-	.get(productController.getAllProducts)
+	.get((req, res, next) => {
+		req.filterOptions = {};
+
+		next();
+	}, productController.getAllProducts)
 	.post(productController.createProduct);
 
 router

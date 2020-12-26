@@ -10,6 +10,8 @@ const productsRouter = require("./routes/productRouter");
 const errorController = require("./controllers/errorController");
 const AppError = require("./utils/AppError");
 
+require("./utils/setupRedis");
+
 const app = express();
 
 app.use(express.json());
