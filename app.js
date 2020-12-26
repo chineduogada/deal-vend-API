@@ -10,7 +10,7 @@ const productsRouter = require("./routes/productRouter");
 const errorController = require("./controllers/errorController");
 const AppError = require("./utils/AppError");
 
-require("./utils/setupRedis");
+require("./services/cache");
 
 const app = express();
 

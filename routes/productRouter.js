@@ -1,18 +1,15 @@
 const router = require("express").Router();
 const productController = require("../controllers/productController");
+const cacheQuery = require("../middlewares/cacheQuery");
 
 router
 	.route("/")
-	.get((req, res, next) => {
-		req.filterOptions = {};
-
-		next();
-	}, productController.getAllProducts)
+	.get(cacheQuery, productController.getAllProducts)
 	.post(productController.createProduct);
 
 router
 	.route("/:id")
-	.get(productController.getProduct)
+	.get(cacheQuery, productController.getProduct)
 	.patch(productController.updateProduct)
 	.delete(productController.deleteProduct);
 
