@@ -1,6 +1,7 @@
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/AppError");
 const APIFeatures = require("../utils/APIFeatures");
+const { clearHash } = require("../services/cache");
 
 const buildQueryToCache = (req, query) => {
 	console.log(req.cacheOptions);
@@ -72,6 +73,8 @@ exports.createOne = (Model, docName = "document", schema) =>
 				[docName]: doc,
 			},
 		});
+
+		clearHash("products");
 	});
 
 exports.updateOne = (Model, docName = "document") =>
@@ -93,6 +96,8 @@ exports.updateOne = (Model, docName = "document") =>
 				[docName]: doc,
 			},
 		});
+
+		clearHash("products");
 	});
 
 exports.deleteOne = (Model, docName = "document") =>
@@ -109,5 +114,7 @@ exports.deleteOne = (Model, docName = "document") =>
 			status: "success",
 			data: null,
 		});
+
+		clearHash("products");
 	});
 
