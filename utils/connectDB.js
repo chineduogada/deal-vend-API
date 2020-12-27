@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const devLog = require("./devLog");
 
 // CONSTANT VARIABLES
 const DB_STRING = process.env.DB_CONNECTION_STR.replace(
@@ -13,6 +14,6 @@ mongoose
 		useUnifiedTopology: true,
 		useFindAndModify: false,
 	})
-	.then(() => console.log("> Successfully connected to MongoDB..."))
+	.then(() => devLog("> Successfully connected to MongoDB..."))
 	.catch((err) => console.log("Failed to connect to MongoDB.", err));
 

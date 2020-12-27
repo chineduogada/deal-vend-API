@@ -2,10 +2,15 @@ const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/AppError");
 const APIFeatures = require("../utils/APIFeatures");
 
+const buildQueryToCache = (req, query) => {
+	query = req.cache ? query.cache(req.cacheOptions) : query;
+	return query;
+};
+
 exports.getMany = (Model, docName = "document") =>
 	catchAsync(async (req, res) => {
 		const apiFeatures = new APIFeatures(
-			Model.find(req.filterOptions),
+			buildQueryToCache(req, Model.find(req.filterOptions)),
 			req.query
 		)
 			.filter()
@@ -33,7 +38,7 @@ exports.getOne = (Model, docName = "document", populateOptions) =>
 		if (populateOptions) {
 			query = query.populate(populateOptions);
 		}
-		const doc = await query;
+		const doc = await buildQueryToCache(req, query);
 
 		if (!doc) {
 			return next(
