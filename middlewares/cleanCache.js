@@ -1,13 +1,11 @@
 const _ = require("lodash");
 const { clearHash } = require("../services/cache");
+const devLog = require("../utils/devLog");
 
 module.exports = (reqHashKey, plainHashKey) => async (req, _res, next) => {
 	await next();
 
-	if (reqHashKey) {
-		return clearHash(_.get(req, reqHashKey));
-	}
-
-	clearHash(plainHashKey);
+	const hashKey = reqHashKey ? _.get(req, reqHashKey) : plainHashKey;
+	clearHash(hashKey);
 };
 

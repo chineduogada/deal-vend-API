@@ -3,8 +3,16 @@ const { promisify } = require("util");
 const redis = require("redis");
 const devLog = require("../utils/devLog");
 
+const clearHash = (hashKey) => {
+	devLog(`> "${hashKey}" CACHE, HAS BEEN CLEANED`);
+
+	redisClient.del(JSON.stringify(hashKey));
+};
+
 const redisUrl = "redis://127.0.0.1:6379";
 const redisClient = redis.createClient(redisUrl);
+
+// redisClient.flushall();
 
 const exec = mongoose.Query.prototype.exec;
 
@@ -53,8 +61,6 @@ mongoose.Query.prototype.exec = async function () {
 };
 
 module.exports = {
-	clearHash: (hashKey) => {
-		redisClient.del(JSON.stringify(hashKey));
-	},
+	clearHash,
 };
 
