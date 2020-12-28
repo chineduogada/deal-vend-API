@@ -44,6 +44,7 @@ const schema = new mongoose.Schema({
 		select: false,
 		default: Date.now,
 	},
+	passwordChangedAt: Date,
 });
 
 schema.pre("save", async function (next) {
@@ -57,6 +58,15 @@ schema.pre("save", async function (next) {
 
 schema.methods.comparePasswords = async function (plainPassword, hashPassword) {
 	return await bcrypt.compare(plainPassword, hashPassword);
+};
+schema.methods.changePasswordAfterTokenWasIssued = function (tokenIssuedAt) {
+	if (this.passwordChangedAt) {
+		const passwordChangedAt = parseInt(
+			this.passwordChangedAt.getTime() / 1000
+		);
+
+		return passwordChangedAt > tokenIssuedAt;
+	}
 };
 
 const User = mongoose.model("User", schema);

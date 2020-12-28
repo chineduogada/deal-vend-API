@@ -87,3 +87,48 @@ exports.login = catchAsync(async (req, res, next) => {
 	});
 });
 
+exports.protect = catchAsync(async (req, res, next) => {
+	let token;
+
+	if (
+		req.headers.authorization &&
+		req.headers.authorization.startsWith("Bearer")
+	) {
+		token = req.headers.authorization.replace("Bearer ", "");
+	}
+
+	if (!token) {
+		return next(
+			new AppError(
+				"You're not logged in! Please log in to gain access!",
+				401
+			)
+		);
+	}
+
+	const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+	const existingUser = await User.findById(decoded.id);
+
+	if (!existingUser) {
+		return next(
+			new AppError(
+				"The user whom this token was issued to, no longer exist! Please Login again.",
+				401
+			)
+		);
+	}
+
+	if (existingUser.changePasswordAfterTokenWasIssued(decoded.iat)) {
+		return next(
+			new AppError(
+				"User recently changed password! Please login a again.",
+				401
+			)
+		);
+	}
+
+	req.user = existingUser;
+	next();
+});
+

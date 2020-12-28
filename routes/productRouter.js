@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const productController = require("../controllers/productController");
+const authController = require("../controllers/authController");
 const cacheQuery = require("../middlewares/cacheQuery");
 const cleanCache = require("../middlewares/cleanCache");
 
@@ -16,7 +17,8 @@ router.get(
 );
 
 // Setup middleware for routes that will clean `products` cache
-router.use(cleanCache(null, "products"));
+// Protect with Authentication
+router.use(cleanCache(null, "products"), authController.protect);
 
 router.post("/", productController.createProduct);
 
