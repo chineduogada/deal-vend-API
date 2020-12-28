@@ -5,6 +5,7 @@ const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/AppError");
 const validateInput = require("../utils/validateInput");
 const User = require("../models/userModel");
+const { schema } = require("../models/userModel");
 
 const signJWT = async ({ user, payload }) => {
 	payload = user
@@ -71,7 +72,7 @@ exports.login = catchAsync(async (req, res, next) => {
 
 	if (
 		!existingUser ||
-		!(await existingUser.comparePasswords(
+		!(await existingUser.isPasswordCorrect(
 			req.body.password,
 			existingUser.password
 		))
@@ -130,5 +131,44 @@ exports.protect = catchAsync(async (req, res, next) => {
 
 	req.user = existingUser;
 	next();
+});
+
+exports.changeMyPassword = catchAsync(async (req, res, next) => {
+	const schema = Joi.object({
+		currentPassword: Joi.string().min(8).required(),
+		newPassword: Joi.string().min(8).required(),
+		confirmPassword: Joi.ref("newPassword"),
+	}).with("newPassword", "confirmPassword");
+
+	validate(req, next, schema);
+
+	const existingUser = await User.findById(req.user.id).select("+password");
+
+	if (
+		!(await existingUser.isPasswordCorrect(
+			req.body.currentPassword,
+			existingUser.password
+		))
+	) {
+		return next(
+			new AppError(
+				"`currentPassword` is incorrect! Please cross-check and try again.",
+				400
+			)
+		);
+	}
+
+	// Change password
+	existingUser.password = req.body.newPassword;
+	existingUser.passwordChangedAt = Date.now();
+	await existingUser.save();
+
+	// Login the user in
+	const token = await signJWT({ user: req.user });
+
+	res.status(200).json({
+		status: "success",
+		token,
+	});
 });
 

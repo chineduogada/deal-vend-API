@@ -56,9 +56,13 @@ schema.pre("save", async function (next) {
 	next();
 });
 
-schema.methods.comparePasswords = async function (plainPassword, hashPassword) {
+schema.methods.isPasswordCorrect = async function (
+	plainPassword,
+	hashPassword
+) {
 	return await bcrypt.compare(plainPassword, hashPassword);
 };
+
 schema.methods.changePasswordAfterTokenWasIssued = function (tokenIssuedAt) {
 	if (this.passwordChangedAt) {
 		const passwordChangedAt = parseInt(
