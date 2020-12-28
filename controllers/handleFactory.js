@@ -1,6 +1,7 @@
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/AppError");
 const APIFeatures = require("../utils/APIFeatures");
+const validateInput = require("../utils/validateInput");
 
 const buildQueryToCache = (req, query) => {
 	query = req.cache ? query.cache(req.cacheOptions) : query;
@@ -56,7 +57,7 @@ exports.getOne = (Model, docName = "document", populateOptions) =>
 
 exports.createOne = (Model, docName = "document", schema) =>
 	catchAsync(async (req, res, next) => {
-		const { error } = schema.validate(req.body);
+		const error = validateInput(req.body, schema);
 
 		if (error) {
 			return next(new AppError(error.details[0].message, 400));

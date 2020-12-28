@@ -27,7 +27,6 @@ const schema = new mongoose.Schema({
 	bio: {
 		type: String,
 		trim: true,
-		required: [true, "`name` is required"],
 		minlength: [10, "`name` can be '10' or more characters"],
 		maxlength: [20, "`name` can be '20' or less characters"],
 	},
