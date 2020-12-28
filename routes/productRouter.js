@@ -18,7 +18,11 @@ router.get(
 
 // Setup middleware for routes that will clean `products` cache
 // Protect with Authentication
-router.use(cleanCache(null, "products"), authController.protect);
+router.use(
+	cleanCache(null, "products"),
+	authController.protect,
+	authController.restrictTo("seller", "admin")
+);
 
 router.post("/", productController.createProduct);
 

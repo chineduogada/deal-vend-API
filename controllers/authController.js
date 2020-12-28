@@ -5,7 +5,6 @@ const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/AppError");
 const validateInput = require("../utils/validateInput");
 const User = require("../models/userModel");
-const { schema } = require("../models/userModel");
 
 const signJWT = async ({ user, payload }) => {
 	payload = user
@@ -23,13 +22,6 @@ const signJWT = async ({ user, payload }) => {
 	return token;
 };
 
-const validate = (req, next, schema) => {
-	const error = validateInput(req.body, schema);
-	if (error) {
-		return next(new AppError(error.details[0].message, 400));
-	}
-};
-
 exports.signUp = catchAsync(async (req, res, next) => {
 	const schema = Joi.object({
 		name: Joi.string().min(3).max(25).required(),
@@ -38,7 +30,10 @@ exports.signUp = catchAsync(async (req, res, next) => {
 		email: Joi.string().email().required(),
 	}).with("password", "confirmPassword");
 
-	validate(req, next, schema);
+	const error = validateInput(req.body, schema);
+	if (error) {
+		return next(new AppError(error.details[0].message, 400));
+	}
 
 	let user = await User.create(req.body);
 	user = {
@@ -64,7 +59,10 @@ exports.login = catchAsync(async (req, res, next) => {
 		email: Joi.string().email().required(),
 	});
 
-	validate(req, next, schema);
+	const error = validateInput(req.body, schema);
+	if (error) {
+		return next(new AppError(error.details[0].message, 400));
+	}
 
 	const existingUser = await User.findOne({ email: req.body.email }).select(
 		"+password +email"
@@ -133,6 +131,17 @@ exports.protect = catchAsync(async (req, res, next) => {
 	next();
 });
 
+exports.restrictTo = (...roles) =>
+	catchAsync(async (req, _res, next) => {
+		if (!roles.includes(req.user.role)) {
+			return next(
+				new AppError("You are not permitted to perform this action!", 403)
+			);
+		}
+
+		next();
+	});
+
 exports.changeMyPassword = catchAsync(async (req, res, next) => {
 	const schema = Joi.object({
 		currentPassword: Joi.string().min(8).required(),
@@ -140,7 +149,10 @@ exports.changeMyPassword = catchAsync(async (req, res, next) => {
 		confirmPassword: Joi.ref("newPassword"),
 	}).with("newPassword", "confirmPassword");
 
-	validate(req, next, schema);
+	const error = validateInput(req.body, schema);
+	if (error) {
+		return next(new AppError(error.details[0].message, 400));
+	}
 
 	const existingUser = await User.findById(req.user.id).select("+password");
 
