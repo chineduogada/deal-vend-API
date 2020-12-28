@@ -5,6 +5,7 @@ const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/AppError");
 const validateInput = require("../utils/validateInput");
 const User = require("../models/userModel");
+const { sendEmail } = require("../services/email");
 
 const signJWT = async ({ user, payload }) => {
 	payload = user
@@ -86,7 +87,7 @@ exports.login = catchAsync(async (req, res, next) => {
 	});
 });
 
-exports.protect = catchAsync(async (req, res, next) => {
+exports.protect = catchAsync(async (req, _res, next) => {
 	let token;
 
 	if (
@@ -182,5 +183,49 @@ exports.changeMyPassword = catchAsync(async (req, res, next) => {
 		status: "success",
 		token,
 	});
+});
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+	const schema = Joi.object({
+		email: Joi.string().email().required(),
+	});
+
+	const error = validateInput(req.body, schema);
+	if (error) {
+		return next(new AppError(error.details[0].message, 400));
+	}
+
+	const existingUser = await User.findOne({ email: req.body.email });
+
+	if (!existingUser) {
+		return next(
+			new AppError(
+				"Unrecognized `email`! Please enter your correct `email`",
+				400
+			)
+		);
+	}
+
+	const resetUrl = `${req.protocol}://${req.get(
+		"host"
+	)}/api/v1/users/auth/reset-password/1234567890qwerty`;
+
+	const emailOptions = {
+		to: req.body.email,
+		subject: "Password Reset Token (valid for 10mins)",
+		message: `Click here:${resetUrl} to reset your password. If you didn't wanted to change your password please ignore this email.`,
+	};
+
+	await sendEmail(emailOptions);
+
+	res.status(200).json({
+		status: "success",
+		message:
+			"A reset `email` has been successfully sent to you 'email-address'",
+	});
+});
+
+exports.resetPassword = catchAsync(async (req, res, next) => {
+	res.send("password reset successfully.");
 });
 
