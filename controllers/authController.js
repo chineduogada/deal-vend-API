@@ -6,6 +6,7 @@ const AppError = require("../utils/AppError");
 const validateInput = require("../utils/validateInput");
 const User = require("../models/userModel");
 const { sendEmail } = require("../services/email");
+const crypto = require("crypto");
 
 const signJWT = async ({ user, payload }) => {
 	payload = user
@@ -205,10 +206,12 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 			)
 		);
 	}
+	const resetToken = existingUser.getResetToken();
+	await existingUser.save();
 
 	const resetUrl = `${req.protocol}://${req.get(
 		"host"
-	)}/api/v1/users/auth/reset-password/1234567890qwerty`;
+	)}/api/v1/users/auth/reset-password/${resetToken}`;
 
 	const emailOptions = {
 		to: req.body.email,
@@ -216,16 +219,62 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 		message: `Click here:${resetUrl} to reset your password. If you didn't wanted to change your password please ignore this email.`,
 	};
 
-	await sendEmail(emailOptions);
+	try {
+		await sendEmail(emailOptions);
 
-	res.status(200).json({
-		status: "success",
-		message:
-			"A reset `email` has been successfully sent to you 'email-address'",
-	});
+		res.status(200).json({
+			status: "success",
+			message:
+				"A reset `email` has been successfully sent to you 'email-address'.",
+		});
+	} catch (err) {
+		existingUser.passwordResetToken = undefined;
+		existingUser.passwordResetTokenExpiresAt = undefined;
+		await existingUser.save();
+
+		next(
+			new AppError(
+				"Something went wrong while sending your `email`! Please try again."
+			)
+		);
+	}
 });
 
 exports.resetPassword = catchAsync(async (req, res, next) => {
-	res.send("password reset successfully.");
+	const schema = Joi.object({
+		newPassword: Joi.string().min(8).required(),
+		confirmPassword: Joi.ref("newPassword"),
+	}).with("newPassword", "confirmPassword");
+
+	const error = validateInput(req.body, schema);
+	if (error) {
+		return next(new AppError(error.details[0].message, 400));
+	}
+
+	const resetToken = crypto
+		.createHash("sha256")
+		.update(req.params.token)
+		.digest("hex");
+
+	const existingUser = await User.findOne({
+		passwordResetToken: resetToken,
+		passwordResetTokenExpiresAt: { $gte: Date.now() },
+	});
+
+	if (!existingUser) {
+		return next(new AppError("Invalid or expired reset token!"));
+	}
+
+	// set new password and clear every password data in the Document
+	existingUser.password = req.body.newPassword;
+	existingUser.passwordResetToken = undefined;
+	existingUser.passwordResetTokenExpiresAt = undefined;
+	await existingUser.save();
+
+	const token = await signJWT({ user: existingUser });
+	res.status(200).json({
+		status: "success",
+		token,
+	});
 });
 
