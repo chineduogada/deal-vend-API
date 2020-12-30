@@ -5,7 +5,7 @@ const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/AppError");
 const validateInput = require("../utils/validateInput");
 const User = require("../models/userModel");
-const { sendEmail } = require("../services/email");
+const Email = require("../services/Email");
 const crypto = require("crypto");
 
 const signJWT = async ({ user, payload }) => {
@@ -53,6 +53,8 @@ exports.signUp = catchAsync(async (req, res, next) => {
 			user,
 		},
 	});
+
+	await new Email(user, `http://not-yet-implemented`).welcome();
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -196,7 +198,9 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 		return next(new AppError(error.details[0].message, 400));
 	}
 
-	const existingUser = await User.findOne({ email: req.body.email });
+	const existingUser = await User.findOne({ email: req.body.email }).select(
+		"+email"
+	);
 
 	if (!existingUser) {
 		return next(
@@ -213,14 +217,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 		"host"
 	)}/api/v1/users/auth/reset-password/${resetToken}`;
 
-	const emailOptions = {
-		to: req.body.email,
-		subject: "Password Reset Token (valid for 10mins)",
-		message: `Click here:${resetUrl} to reset your password. If you didn't wanted to change your password please ignore this email.`,
-	};
-
 	try {
-		await sendEmail(emailOptions);
+		await new Email(existingUser, resetUrl).resetPassword();
 
 		res.status(200).json({
 			status: "success",
@@ -231,6 +229,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 		existingUser.passwordResetToken = undefined;
 		existingUser.passwordResetTokenExpiresAt = undefined;
 		await existingUser.save();
+
+		console.log(err);
 
 		next(
 			new AppError(
