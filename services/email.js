@@ -63,6 +63,10 @@ module.exports = class Email {
 		);
 	}
 
+	async verifyEmail() {
+		await this.send("verifyEmail", "Verify Your Email (valid for 10mins)");
+	}
+
 	async welcome() {
 		await this.send("welcome", "Welcome to Deal Vend");
 	}

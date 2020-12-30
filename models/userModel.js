@@ -25,7 +25,6 @@ const schema = new mongoose.Schema({
 		lowercase: true,
 		select: false,
 	},
-	photo: String,
 	bio: {
 		type: String,
 		trim: true,
@@ -45,9 +44,16 @@ const schema = new mongoose.Schema({
 		select: false,
 		default: Date.now,
 	},
+
+	photo: String,
+
 	passwordChangedAt: Date,
 	passwordResetToken: String,
 	passwordResetTokenExpiresAt: Date,
+
+	emailConfirmToken: String,
+	emailConfirmTokenExpiresAt: Date,
+	emailVerified: Boolean,
 });
 
 schema.pre("save", async function (next) {
@@ -94,6 +100,20 @@ schema.methods.getResetToken = function () {
 	this.passwordResetTokenExpiresAt = Date.now() + 10 * 60 * 1000;
 
 	return resetToken;
+};
+
+schema.methods.getEmailConfirmToken = function () {
+	const token = crypto.randomBytes(32).toString("hex");
+
+	const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+	console.log("hit");
+
+	this.emailConfirmToken = tokenHash;
+	this.emailConfirmTokenExpiresAt = Date.now() + 10 * 60 * 1000;
+
+	console.log("hit_ted");
+	return token;
 };
 
 const User = mongoose.model("User", schema);

@@ -7,6 +7,7 @@ const validateInput = require("../utils/validateInput");
 const User = require("../models/userModel");
 const Email = require("../services/Email");
 const crypto = require("crypto");
+const buildUrl = require("../utils/buildUrl");
 
 const signJWT = async ({ user, payload }) => {
 	payload = user
@@ -23,6 +24,33 @@ const signJWT = async ({ user, payload }) => {
 
 	return token;
 };
+
+exports.inputEmailAddress = catchAsync(async (req, _res, next) => {
+	const schema = Joi.object({
+		email: Joi.string().email().required(),
+	});
+
+	const error = validateInput(req.body, schema);
+	if (error) {
+		return next(new AppError(error.details[0].message, 400));
+	}
+
+	const existingUser = await User.findOne({ email: req.body.email }).select(
+		"+email"
+	);
+
+	if (!existingUser) {
+		return next(
+			new AppError(
+				"Unrecognized `email`! Please enter your correct `email`",
+				400
+			)
+		);
+	}
+
+	req.existingUser = existingUser;
+	next();
+});
 
 exports.signUp = catchAsync(async (req, res, next) => {
 	const schema = Joi.object({
@@ -189,27 +217,8 @@ exports.changeMyPassword = catchAsync(async (req, res, next) => {
 });
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
-	const schema = Joi.object({
-		email: Joi.string().email().required(),
-	});
+	const { existingUser } = req;
 
-	const error = validateInput(req.body, schema);
-	if (error) {
-		return next(new AppError(error.details[0].message, 400));
-	}
-
-	const existingUser = await User.findOne({ email: req.body.email }).select(
-		"+email"
-	);
-
-	if (!existingUser) {
-		return next(
-			new AppError(
-				"Unrecognized `email`! Please enter your correct `email`",
-				400
-			)
-		);
-	}
 	const resetToken = existingUser.getResetToken();
 	await existingUser.save();
 
@@ -226,11 +235,11 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 				"A reset `email` has been successfully sent to you 'email-address'.",
 		});
 	} catch (err) {
+		console.log(err);
+
 		existingUser.passwordResetToken = undefined;
 		existingUser.passwordResetTokenExpiresAt = undefined;
 		await existingUser.save();
-
-		console.log(err);
 
 		next(
 			new AppError(
@@ -275,6 +284,68 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 	res.status(200).json({
 		status: "success",
 		token,
+	});
+});
+
+exports.verifyEmail = catchAsync(async (req, res, next) => {
+	const { existingUser } = req;
+	const token = existingUser.getEmailConfirmToken();
+	await existingUser.save();
+
+	const url = buildUrl(
+		req,
+		`/api/v1/users/auth/confirm-email-verification/${token}`
+	);
+
+	try {
+		await new Email(existingUser, url).verifyEmail();
+
+		res.status(200).json({
+			status: "success",
+			message:
+				"An `email` confirmation has been successfully sent to you 'email-address'.",
+		});
+	} catch (err) {
+		console.log(err);
+
+		existingUser.emailConfirmToken = undefined;
+		existingUser.emailConfirmTokenExpiresAt = undefined;
+		await existingUser.save();
+
+		next(
+			new AppError(
+				"Something went wrong while sending your `email`! Please try again."
+			)
+		);
+	}
+});
+
+exports.confirmEmailVerification = catchAsync(async (req, res, next) => {
+	const token = crypto
+		.createHash("sha256")
+		.update(req.params.token)
+		.digest("hex");
+
+	const existingUser = await User.findOne({
+		emailConfirmToken: token,
+		emailConfirmTokenExpiresAt: { $gte: Date.now() },
+	});
+
+	if (!existingUser) {
+		return next(
+			new AppError("Invalid or expired `email verification token`!")
+		);
+	}
+
+	existingUser.emailConfirmToken = undefined;
+	existingUser.emailConfirmTokenExpiresAt = undefined;
+	existingUser.emailVerified = true;
+
+	await existingUser.save();
+
+	res.status(200).json({
+		status: "success",
+		message: "Your `email` has been successfully verified.",
 	});
 });
 
