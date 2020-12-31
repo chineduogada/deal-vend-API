@@ -35,9 +35,7 @@ exports.inputEmailAddress = catchAsync(async (req, _res, next) => {
 		return next(new AppError(error.details[0].message, 400));
 	}
 
-	const existingUser = await User.findOne({ email: req.body.email }).select(
-		"+email"
-	);
+	const existingUser = await User.findOne({ email: req.body.email });
 
 	if (!existingUser) {
 		return next(
@@ -108,6 +106,12 @@ exports.login = catchAsync(async (req, res, next) => {
 		))
 	) {
 		return next(new AppError("invalid `email` or `password`"));
+	}
+
+	if (existingUser.passwordResetToken) {
+		existingUser.passwordResetToken = undefined;
+		existingUser.passwordResetTokenExpiresAt = undefined;
+		await existingUser.save();
 	}
 
 	const token = await signJWT({ user: existingUser });
@@ -204,7 +208,6 @@ exports.changeMyPassword = catchAsync(async (req, res, next) => {
 
 	// Change password
 	existingUser.password = req.body.newPassword;
-	existingUser.passwordChangedAt = Date.now();
 	await existingUser.save();
 
 	// Login the user in
@@ -349,3 +352,14 @@ exports.confirmEmailVerification = catchAsync(async (req, res, next) => {
 	});
 });
 
+exports.deactivateAccount = catchAsync(async (req, res) => {
+	await User.findByIdAndUpdate(req.user.id, {
+		active: false,
+	});
+
+	res.status(200).json({
+		status: "success",
+		data: null,
+		message: "Your account has been successfully deactivated",
+	});
+});

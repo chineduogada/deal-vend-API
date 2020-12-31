@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
+const { truncate } = require("lodash");
 
 const schema = new mongoose.Schema({
 	name: {
@@ -14,7 +15,7 @@ const schema = new mongoose.Schema({
 	password: {
 		type: String,
 		required: [true, "`password` is required"],
-		minlength: [8, "`name` can be '8' or more characters"],
+		minlength: [8, "`password` can be '8' or more characters"],
 		select: false,
 	},
 	email: {
@@ -23,13 +24,12 @@ const schema = new mongoose.Schema({
 		required: [true, "`email` is required"],
 		unique: true,
 		lowercase: true,
-		select: false,
 	},
 	bio: {
 		type: String,
 		trim: true,
-		minlength: [10, "`name` can be '10' or more characters"],
-		maxlength: [20, "`name` can be '20' or less characters"],
+		minlength: [10, "`bio` can be '10' or more characters"],
+		maxlength: [30, "`bio` can be '30' or less characters"],
 	},
 	role: {
 		type: String,
@@ -45,6 +45,12 @@ const schema = new mongoose.Schema({
 		default: Date.now,
 	},
 
+	active: {
+		type: Boolean,
+		default: true,
+		select: false,
+	},
+
 	photo: String,
 
 	passwordChangedAt: Date,
@@ -53,7 +59,11 @@ const schema = new mongoose.Schema({
 
 	emailConfirmToken: String,
 	emailConfirmTokenExpiresAt: Date,
-	emailVerified: Boolean,
+
+	emailVerified: {
+		type: Boolean,
+		default: false,
+	},
 });
 
 schema.pre("save", async function (next) {
@@ -65,7 +75,7 @@ schema.pre("save", async function (next) {
 	next();
 });
 
-schema.pre("save", async function (next) {
+schema.pre("save", function (next) {
 	if (this.isNew || !this.isModified("password")) return next();
 
 	this.passwordChangedAt = Date.now() - 1000;
@@ -77,6 +87,30 @@ schema.methods.isPasswordCorrect = async function (
 ) {
 	return await bcrypt.compare(plainPassword, hashPassword);
 };
+
+schema.pre(/^find/, function (next) {
+	// `this` points to the current `query`
+	this.find({ active: true });
+	next();
+});
+
+schema.pre("findOneAndUpdate", async function (next) {
+	let emailModified;
+
+	for (key in this._update) {
+		if (key === "email") {
+			emailModified = this._update.email;
+		}
+	}
+
+	if (!emailModified) return next();
+
+	const doc = await this.findOne();
+	doc.emailVerified = false;
+	await doc.save();
+
+	next();
+});
 
 schema.methods.changePasswordAfterTokenWasIssued = function (tokenIssuedAt) {
 	if (this.passwordChangedAt) {

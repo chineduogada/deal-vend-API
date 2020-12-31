@@ -43,7 +43,7 @@ exports.getOne = (Model, docName = "document", populateOptions) =>
 
 		if (!doc) {
 			return next(
-				new AppError(`no \`${docName}\` with the given 'id'`, 404)
+				new AppError(`No '${docName}' with the given \`id\`!`, 404)
 			);
 		}
 
@@ -73,8 +73,14 @@ exports.createOne = (Model, docName = "document", schema) =>
 		});
 	});
 
-exports.updateOne = (Model, docName = "document") =>
+exports.updateOne = (Model, docName = "document", schema) =>
 	catchAsync(async (req, res, next) => {
+		const error = validateInput(req.body, schema);
+
+		if (error) {
+			return next(new AppError(error.details[0].message, 400));
+		}
+
 		const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
 			new: true,
 			runValidators: true,
@@ -82,7 +88,7 @@ exports.updateOne = (Model, docName = "document") =>
 
 		if (!doc) {
 			return next(
-				new AppError(`no \`${docName}\` with the given 'id'`, 404)
+				new AppError(`No '${docName}' with the given \`id\`!`, 404)
 			);
 		}
 
@@ -100,7 +106,7 @@ exports.deleteOne = (Model, docName = "document") =>
 
 		if (!doc) {
 			return next(
-				new AppError(`no \`${docName}\` with the given 'id'`, 404)
+				new AppError(`No '${docName}' with the given \`id\`!`, 404)
 			);
 		}
 
