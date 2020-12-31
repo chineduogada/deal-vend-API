@@ -1,0 +1,18 @@
+extends base
+
+block content
+  // CONTENT
+  p Hi #{user.name},
+  p Welcome to Deal Vend, we're glad to have you 🎉🙏
+  p Nigeria's No:1 market place, where you buy anything at your best prices and have them shipped to you at a speed of light.
+  table.btn.btn-primary(role='presentation', border='0', cellpadding='0', cellspacing='0')
+    tbody
+      tr
+        td(align='left')
+          table(role='presentation', border='0', cellpadding='0', cellspacing='0')
+            tbody
+              tr
+                td
+                  a(href=`${url}`, target='_blank') Upload user photo
+  p If you need any help buying your next product, please don't hesitate to contact our costumer care!
+  p - Stanley C. Ogada, CEO

@@ -1,0 +1,17 @@
+extends base
+
+block content
+  // CONTENT
+  p Hi #{user.name},
+  p Verify your email address, so incase you forget your password, it will be easier for us to still identify you. 
+    a(href=`${url}`, target='_blank')= url
+  p (Website for this action is NOT yet implemented!)
+  table.btn.btn-primary(role='presentation', border='0', cellpadding='0', cellspacing='0')
+    tbody
+      tr
+        td(align='left')
+          table(role='presentation', border='0', cellpadding='0', cellspacing='0')
+            tbody
+              tr
+                td
+                  a(href=`${url}`, target='_blank') Verify email
