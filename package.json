@@ -4,8 +4,8 @@
 	"description": "",
 	"main": "app.js",
 	"engines": {
-    "node": "12.x"
-  },
+		"node": "12.x"
+	},
 	"jest": {
 		"setupTestFrameworkScriptFile": "./tests/setupTest.js"
 	},
