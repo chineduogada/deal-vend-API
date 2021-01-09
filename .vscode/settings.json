@@ -3,6 +3,7 @@
     "BCOS",
     "hget",
     "hset",
+    "promisify",
     "virtuals"
   ]
 }
