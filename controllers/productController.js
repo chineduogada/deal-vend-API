@@ -1,5 +1,6 @@
 const Joi = require("joi");
 const Product = require("../models/productModel");
+const catchAsync = require("../utils/catchAsync");
 const {
 	getMany,
 	getOne,
@@ -47,6 +48,53 @@ const updateSchema = Joi.object({
 	imageCover: Joi.string(),
 	images: Joi.string(),
 });
+
+exports.topSales = catchAsync(async (req, res, next) => 
+{
+	req.query = {...req.query,
+		inStock: {$gte: 1},
+		sort: "-searchCount",
+		limit: 10
+	}
+
+	next()
+})
+
+exports.topCheap = catchAsync(async (req, res, next) => 
+{
+	req.query = {
+		...req.query,
+		limit: 10
+	
+}
+
+	next()
+})
+
+exports.dealsOfTheDay = catchAsync(async (req, res, next) => 
+{
+	req.query = {
+		...req.query,
+
+	}
+
+	next()
+})
+
+exports.seasonSales = catchAsync(async (req, res, next) => 
+{
+req.query = {...req.query,}
+
+	next()
+})
+
+exports.mostSearched = catchAsync(async (req, res, next) => 
+{
+req.query = {}
+
+	next()
+})
+
 
 exports.getAllProducts = getMany(Product, "products");
 exports.getProduct = getOne(Product, "product");

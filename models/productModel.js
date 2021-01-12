@@ -42,7 +42,7 @@ const schema = new mongoose.Schema(
 				},
 			],
 		},
-		ratingsQuantity: Number,
+		ratingsQuantity: {type: Number, default: 0},
 		ratingsAverage: {
 			type: Number,
 			min: [1.0, "`ratingsAverage` can be '1' or more"],
@@ -60,6 +60,23 @@ const schema = new mongoose.Schema(
 			default: Date.now,
 			select: false,
 		},
+		inStock: {
+			type: Number,
+			default: 1,
+		},
+		sales: Number,
+		seasonSale: {
+			type: String,
+			enum: {
+				values: ["easter", "christmas"],
+				validate:
+					"`seasonSale` can be either 'easter' or 'christmas'",
+			},
+		},
+		searchCount: {
+			type: Number,
+			default: 0
+		}
 		// _seller: {
 		//   type: mongoose.S,
 		// ref:

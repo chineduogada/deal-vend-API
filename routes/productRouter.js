@@ -4,6 +4,13 @@ const authController = require("../controllers/authController");
 const cacheQuery = require("../middlewares/cacheQuery");
 const cleanCache = require("../middlewares/cleanCache");
 
+// Aliases 
+router.get("/top-sales", productController.topSales, productController.getAllProducts)
+router.get("/top-cheap", productController.topCheap, productController.getAllProducts)
+router.get("/deals-of-the-day", productController.dealsOfTheDay, productController.getAllProducts)
+router.get("/season-sales", productController.seasonSales, productController.getAllProducts)
+router.get("/most-searched", productController.mostSearched, productController.getAllProducts)
+
 router.get(
 	"/",
 	cacheQuery({ key: "products" }),
