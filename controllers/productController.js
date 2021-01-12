@@ -64,6 +64,7 @@ exports.topCheap = catchAsync(async (req, res, next) =>
 {
 	req.query = {
 		...req.query,
+		sort: "price,-ratingsAverage",
 		limit: 10
 	
 }
