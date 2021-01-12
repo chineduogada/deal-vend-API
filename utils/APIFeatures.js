@@ -13,7 +13,8 @@ class APIFeatures {
     );
 
     let queryString = JSON.stringify(queryObject);
-    const replacePat = /(gt|lt|gte|lte)/;
+
+    const replacePat = /(gt|lt|gte|lte)/g;
     const replaceFn = (match) => `$${match}`;
     queryString = queryString.replace(replacePat, replaceFn);
 

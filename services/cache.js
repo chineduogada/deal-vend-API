@@ -11,7 +11,11 @@ const clearHash = (hashKey) => {
 
 const redisClient = redis.createClient(process.env.REDIS_URI);
 
-// redisClient.flushall();
+function flush() {
+  redisClient.flushall();
+
+  console.log("> REDIS FLUSHED ALL CACHE KEYS.");
+}
 
 const exec = mongoose.Query.prototype.exec;
 
@@ -23,6 +27,8 @@ mongoose.Query.prototype.cache = function (options = {}) {
 };
 
 mongoose.Query.prototype.exec = async function () {
+  // flush();
+
   if (!this._cache) {
     devLog("> THIS QUERY IS NOT CACHED!");
     return await exec.apply(this, arguments);

@@ -27,6 +27,7 @@ const createSchema = Joi.object({
   ratingsAverage: Joi.number().min(1).max(5),
   imageCover: Joi.string().required(),
   images: Joi.string(),
+  inStock: Joi.number(),
 });
 
 const updateSchema = Joi.object({
@@ -47,13 +48,14 @@ const updateSchema = Joi.object({
   ratingsAverage: Joi.number().min(1).max(5),
   imageCover: Joi.string(),
   images: Joi.string(),
+  inStock: Joi.number(),
 });
 
 exports.topSales = catchAsync(async (req, _res, next) => {
   req.query = {
     ...req.query,
-    inStock: { $gte: 1 },
-    sort: "-searchCount",
+    inStock: { gte: 1 },
+    sort: "-salesCount",
     limit: 10,
   };
 
@@ -63,7 +65,8 @@ exports.topSales = catchAsync(async (req, _res, next) => {
 exports.topCheap = catchAsync(async (req, _res, next) => {
   req.query = {
     ...req.query,
-    sort: "price,-ratingsAverage",
+    inStock: { gte: 1 },
+    sort: "-ratingsAverage,price",
     limit: 10,
   };
 
@@ -71,23 +74,27 @@ exports.topCheap = catchAsync(async (req, _res, next) => {
 });
 
 exports.dealsOfTheDay = catchAsync(async (req, _res, next) => {
+  const now = new Date();
+
   req.query = {
     ...req.query,
-    createdAt: { $gte: Date(now.getFullYear(), now.getMonth(), now.getDate()) },
-    limit: req.query.limit || 5,
+    inStock: { gte: 1 },
+    createdAt: {
+      gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+    },
+    limit: req.query.limit || 10,
   };
 
   next();
 });
 
-exports.seasonSales = catchAsync(async (req, _res, next) => {
-  req.query = { ...req.query };
-
-  next();
-});
-
 exports.mostSearched = catchAsync(async (req, _res, next) => {
-  req.query = {};
+  req.query = {
+    ...req.query,
+    inStock: { gte: 1 },
+    sort: "-searchCount,-ratingsAverage",
+    limit: req.query.limit || 10,
+  };
 
   next();
 });
