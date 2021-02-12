@@ -6,8 +6,7 @@ const app = require("./app");
 require("./utils/connectDB");
 
 // START SERVER LISTENING
-const PORT = process.env.NODE_ENV || 8080;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () =>
-	console.log(`> Server ready on \`http://localhost:${PORT}\``)
+  console.log(`> Server ready on \`http://localhost:${PORT}\``)
 );
-
