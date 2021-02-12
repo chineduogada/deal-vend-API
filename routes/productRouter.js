@@ -34,8 +34,8 @@ router.get(
 );
 
 router.get(
-  "/:id",
-  cacheQuery(null, (req) => (req.cacheOptions = { key: req.params.id })),
+  "/:slug",
+  cacheQuery(null, (req) => (req.cacheOptions = { key: req.params.slug })),
   productController.getProduct
 );
 
@@ -50,9 +50,9 @@ router.use(
 router.post("/", productController.createProduct);
 
 // Setup middleware for routes that will clean `a product` cache
-router.use(cleanCache("params.id"));
+router.use(cleanCache("params.slug"));
 router
-  .route("/:id")
+  .route("/:slug")
   .patch(productController.updateProduct)
   .delete(productController.deleteProduct);
 

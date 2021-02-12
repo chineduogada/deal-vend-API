@@ -43,8 +43,6 @@ class APIFeatures {
       fields = fields.replace(/,/g, " ");
 
       this.Query.select(fields);
-    } else {
-      this.Query.select("-__v");
     }
 
     return this;

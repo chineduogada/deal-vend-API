@@ -25,15 +25,14 @@ const schema = new mongoose.Schema(
     category: {
       type: String,
       enum: {
-        values: ["computing", "phones-and-tablets"],
-        validate:
-          "`category` can be either 'computing' or 'phones-and-tablets'",
+        values: ["computer", "phone and tablet"],
+        validate: "`category` can be either 'computer' or 'phone and tablet'",
       },
       required: [true, "`category` is required"],
     },
-    discountPercentage: Number,
     shippedFromAbroad: Boolean,
     dealOffer: String,
+    discount: { type: Number, default: 10 },
     ItemsInBox: {
       type: [
         {
@@ -71,6 +70,12 @@ const schema = new mongoose.Schema(
     searchCount: {
       type: Number,
       default: 0,
+    },
+    slug: {
+      type: String,
+      default: function () {
+        return slugify(this.name);
+      },
     },
     // _seller: {
     //   type: mongoose.S,
@@ -112,8 +117,21 @@ const schema = new mongoose.Schema(
   }
 );
 
-schema.virtual("slug").get(function () {
-  return slugify(this.name);
+schema.index({ slug: 1 });
+
+schema.pre("/^find/", async function (next) {
+  if (!this.isModified("name") && this.isNew) return next();
+
+  console.log("====================================");
+  console.log("WOrKING middleware >>> product 'name' has been modified");
+  console.log("====================================");
+
+  const product = await this.findOne();
+  product.slug = slugify(product.name);
+
+  await product.save();
+
+  next();
 });
 
 const Product = mongoose.model("Product", schema);

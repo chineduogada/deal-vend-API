@@ -27,8 +27,6 @@ mongoose.Query.prototype.cache = function (options = {}) {
 };
 
 mongoose.Query.prototype.exec = async function () {
-  // flush();
-
   if (!this._cache) {
     devLog("> THIS QUERY IS NOT CACHED!");
     return await exec.apply(this, arguments);
@@ -64,6 +62,7 @@ mongoose.Query.prototype.exec = async function () {
   const result = await exec.apply(this, arguments);
   redisClient.hset(this._hashKey, key, JSON.stringify(result));
 
+  // flush();
   devLog("> SERVING DATA FROM MONGODB");
   return result;
 };
