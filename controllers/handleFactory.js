@@ -81,10 +81,6 @@ exports.updateOne = (Model, docName = "document", schema, filterField) =>
       return next(new AppError(error.details[0].message, 400));
     }
 
-    console.log("====================================");
-    console.log(filterField);
-    console.log("====================================");
-
     const doc = filterField
       ? await Model.findOneAndUpdate(
           { [filterField]: req.params[filterField] },
