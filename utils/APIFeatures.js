@@ -13,7 +13,8 @@ class APIFeatures {
     );
 
     let queryString = JSON.stringify(queryObject);
-    const replacePat = /(gt|lt|gte|lte)/;
+
+    const replacePat = /(gt|lt|gte|lte)/g;
     const replaceFn = (match) => `$${match}`;
     queryString = queryString.replace(replacePat, replaceFn);
 
@@ -42,8 +43,6 @@ class APIFeatures {
       fields = fields.replace(/,/g, " ");
 
       this.Query.select(fields);
-    } else {
-      this.Query.select("-__v");
     }
 
     return this;

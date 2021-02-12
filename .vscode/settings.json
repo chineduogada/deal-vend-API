@@ -3,7 +3,11 @@
     "BCOS",
     "hget",
     "hset",
+    "maxlength",
+    "middlewares",
+    "minlength",
     "promisify",
+    "slugify",
     "virtuals"
   ]
 }

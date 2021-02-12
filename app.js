@@ -12,8 +12,6 @@ const userRouter = require("./routes/userRouter");
 const errorController = require("./controllers/errorController");
 const AppError = require("./utils/AppError");
 
-require("./services/cache");
-
 const app = express();
 
 app.use(cors());

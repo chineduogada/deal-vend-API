@@ -2,154 +2,150 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
-const { truncate } = require("lodash");
 
 const schema = new mongoose.Schema({
-	name: {
-		type: String,
-		required: [true, "`name` is required"],
-		minlength: [3, "`name` can be '3' or more characters"],
-		maxlength: [25, "`name` can be '25' or less characters"],
-		trim: true,
-	},
-	password: {
-		type: String,
-		required: [true, "`password` is required"],
-		minlength: [8, "`password` can be '8' or more characters"],
-		select: false,
-	},
-	email: {
-		type: String,
-		validate: [validator.isEmail, "`email` must be valid"],
-		required: [true, "`email` is required"],
-		unique: true,
-		lowercase: true,
-	},
-	bio: {
-		type: String,
-		trim: true,
-		minlength: [10, "`bio` can be '10' or more characters"],
-		maxlength: [30, "`bio` can be '30' or less characters"],
-	},
-	role: {
-		type: String,
-		enum: {
-			values: ["buyer", "seller", "admin"],
-			validate: "`category` can be either 'buyer', 'seller' or 'admin'",
-		},
-		default: "buyer",
-	},
-	createAt: {
-		type: Date,
-		select: false,
-		default: Date.now,
-	},
+  name: {
+    type: String,
+    required: [true, "`name` is required"],
+    minlength: [3, "`name` can be '3' or more characters"],
+    maxlength: [25, "`name` can be '25' or less characters"],
+    trim: true,
+  },
+  password: {
+    type: String,
+    required: [true, "`password` is required"],
+    minlength: [8, "`password` can be '8' or more characters"],
+    select: false,
+  },
+  email: {
+    type: String,
+    validate: [validator.isEmail, "`email` must be valid"],
+    required: [true, "`email` is required"],
+    unique: true,
+    lowercase: true,
+  },
+  bio: {
+    type: String,
+    trim: true,
+    minlength: [10, "`bio` can be '10' or more characters"],
+    maxlength: [30, "`bio` can be '30' or less characters"],
+  },
+  role: {
+    type: String,
+    enum: {
+      values: ["buyer", "seller", "admin"],
+      validate: "`category` can be either 'buyer', 'seller' or 'admin'",
+    },
+    default: "buyer",
+  },
+  createAt: {
+    type: Date,
+    select: false,
+    default: Date.now,
+  },
 
-	active: {
-		type: Boolean,
-		default: true,
-		select: false,
-	},
+  active: {
+    type: Boolean,
+    default: true,
+    select: false,
+  },
 
-	photo: String,
+  photo: String,
 
-	passwordChangedAt: Date,
-	passwordResetToken: String,
-	passwordResetTokenExpiresAt: Date,
+  passwordChangedAt: Date,
+  passwordResetToken: String,
+  passwordResetTokenExpiresAt: Date,
 
-	emailConfirmToken: String,
-	emailConfirmTokenExpiresAt: Date,
+  emailConfirmToken: String,
+  emailConfirmTokenExpiresAt: Date,
 
-	emailVerified: {
-		type: Boolean,
-		default: false,
-	},
+  emailVerified: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 schema.pre("save", async function (next) {
-	if (!this.isModified("password")) return next();
+  if (!this.isModified("password")) return next();
 
-	const salt = await bcrypt.genSalt(10);
-	this.password = await bcrypt.hash(this.password, salt);
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
 
-	next();
+  next();
 });
 
 schema.pre("save", function (next) {
-	if (this.isNew || !this.isModified("password")) return next();
+  if (this.isNew || !this.isModified("password")) return next();
 
-	this.passwordChangedAt = Date.now() - 1000;
+  this.passwordChangedAt = Date.now() - 1000;
 });
 
 schema.methods.isPasswordCorrect = async function (
-	plainPassword,
-	hashPassword
+  plainPassword,
+  hashPassword
 ) {
-	return await bcrypt.compare(plainPassword, hashPassword);
+  return await bcrypt.compare(plainPassword, hashPassword);
 };
 
 schema.pre(/^find/, function (next) {
-	// `this` points to the current `query`
-	this.find({ active: true });
-	next();
+  // `this` points to the current `query`
+  this.find({ active: true });
+  next();
 });
 
 schema.pre("findOneAndUpdate", async function (next) {
-	let emailModified;
+  let emailModified;
 
-	for (key in this._update) {
-		if (key === "email") {
-			emailModified = this._update.email;
-		}
-	}
+  for (key in this._update) {
+    if (key === "email") {
+      emailModified = this._update.email;
+    }
+  }
 
-	if (!emailModified) return next();
+  if (!emailModified) return next();
 
-	const doc = await this.findOne();
-	doc.emailVerified = false;
-	await doc.save();
+  const doc = await this.findOne();
+  doc.emailVerified = false;
+  await doc.save();
 
-	next();
+  next();
 });
 
 schema.methods.changePasswordAfterTokenWasIssued = function (tokenIssuedAt) {
-	if (this.passwordChangedAt) {
-		const passwordChangedAt = parseInt(
-			this.passwordChangedAt.getTime() / 1000
-		);
+  if (this.passwordChangedAt) {
+    const passwordChangedAt = parseInt(this.passwordChangedAt.getTime() / 1000);
 
-		return passwordChangedAt > tokenIssuedAt;
-	}
+    return passwordChangedAt > tokenIssuedAt;
+  }
 };
 
 schema.methods.getResetToken = function () {
-	const resetToken = crypto.randomBytes(32).toString("hex");
+  const resetToken = crypto.randomBytes(32).toString("hex");
 
-	const hashResetToken = crypto
-		.createHash("sha256")
-		.update(resetToken)
-		.digest("hex");
+  const hashResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
 
-	this.passwordResetToken = hashResetToken;
-	this.passwordResetTokenExpiresAt = Date.now() + 10 * 60 * 1000;
+  this.passwordResetToken = hashResetToken;
+  this.passwordResetTokenExpiresAt = Date.now() + 10 * 60 * 1000;
 
-	return resetToken;
+  return resetToken;
 };
 
 schema.methods.getEmailConfirmToken = function () {
-	const token = crypto.randomBytes(32).toString("hex");
+  const token = crypto.randomBytes(32).toString("hex");
 
-	const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
 
-	console.log("hit");
+  console.log("hit");
 
-	this.emailConfirmToken = tokenHash;
-	this.emailConfirmTokenExpiresAt = Date.now() + 10 * 60 * 1000;
+  this.emailConfirmToken = tokenHash;
+  this.emailConfirmTokenExpiresAt = Date.now() + 10 * 60 * 1000;
 
-	console.log("hit_ted");
-	return token;
+  console.log("hit_ted");
+  return token;
 };
 
 const User = mongoose.model("User", schema);
 module.exports = User;
-
