@@ -3,15 +3,10 @@ const AppError = require("../utils/AppError");
 const APIFeatures = require("../utils/APIFeatures");
 const validateInput = require("../utils/validateInput");
 
-const buildQueryToCache = (req, query) => {
-  query = req.cache ? query.cache(req.cacheOptions) : query;
-  return query;
-};
-
 exports.getMany = (Model, docName = "document") =>
   catchAsync(async (req, res) => {
     const apiFeatures = new APIFeatures(
-      buildQueryToCache(req, Model.find(req.filterOptions)),
+      Model.find(req.filterOptions),
       req.query
     )
       .filter()
@@ -59,7 +54,7 @@ exports.getOne = (Model, docName = "document", filterField, populateOptions) =>
     if (populateOptions) {
       query = query.populate(populateOptions);
     }
-    const doc = await buildQueryToCache(req, query);
+    const doc = await query;
 
     if (!doc) {
       return next(
@@ -86,8 +81,19 @@ exports.updateOne = (Model, docName = "document", schema, filterField) =>
       return next(new AppError(error.details[0].message, 400));
     }
 
+    console.log("====================================");
+    console.log(filterField);
+    console.log("====================================");
+
     const doc = filterField
-      ? await Model.findOneAndUpdate({ [filterField]: req.params[filterField] })
+      ? await Model.findOneAndUpdate(
+          { [filterField]: req.params[filterField] },
+          req.body,
+          {
+            new: true,
+            runValidators: true,
+          }
+        )
       : await Model.findByIdAndUpdate(req.params.id, req.body, {
           new: true,
           runValidators: true,

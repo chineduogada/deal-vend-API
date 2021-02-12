@@ -1,13 +1,10 @@
 const router = require("express").Router();
 const productController = require("../controllers/productController");
 const authController = require("../controllers/authController");
-const cacheQuery = require("../middlewares/cacheQuery");
-const cleanCache = require("../middlewares/cleanCache");
 
 // Aliases
 router.get(
   "/top-sales",
-  cacheQuery({ key: "products" }),
   productController.topSales,
   productController.getAllProducts
 );
@@ -27,30 +24,18 @@ router.get(
   productController.getAllProducts
 );
 
-router.get(
-  "/",
-  cacheQuery({ key: "products" }),
-  productController.getAllProducts
-);
+router.get("/", productController.getAllProducts);
 
-router.get(
-  "/:slug",
-  cacheQuery(null, (req) => (req.cacheOptions = { key: req.params.slug })),
-  productController.getProduct
-);
+router.get("/:slug", productController.getProduct);
 
-// Setup middleware for routes that will clean `products` cache
 // Protect with Authentication
 router.use(
   authController.protect,
-  authController.restrictTo("seller", "admin"),
-  cleanCache(null, "products")
+  authController.restrictTo("seller", "admin")
 );
 
 router.post("/", productController.createProduct);
 
-// Setup middleware for routes that will clean `a product` cache
-router.use(cleanCache("params.slug"));
 router
   .route("/:slug")
   .patch(productController.updateProduct)
