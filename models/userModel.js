@@ -33,6 +33,7 @@ const schema = new mongoose.Schema({
   role: {
     type: String,
     enum: {
+      // "supplier", "customer"
       values: ["buyer", "seller", "admin"],
       validate: "`category` can be either 'buyer', 'seller' or 'admin'",
     },
