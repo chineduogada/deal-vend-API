@@ -2,26 +2,26 @@ const mongoose = require("mongoose");
 
 const schema = new mongoose.Schema(
   {
-    review: { type: String },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    product: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Product",
+      required: [true, "`product` is required"],
+    },
     rating: {
       type: Number,
       required: [true, "`rating` is required"],
       min: [1.0, "`rating` can be '1.0' or more"],
       max: [5.0, "`rating` can be '5.0' or less"],
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
+    review: { type: String },
     user: {
       type: mongoose.Schema.ObjectId,
       ref: "User",
       required: [true, "`user` is required"],
-    },
-    product: {
-      type: mongoose.Schema.ObjectId,
-      ref: "Product",
-      required: [true, "`product` is required"],
     },
   },
   {
@@ -32,4 +32,4 @@ const schema = new mongoose.Schema(
 
 const CustomerFeedback = mongoose.model("CustomerFeedback", schema);
 
-export default CustomerFeedback;
+module.exports = CustomerFeedback;
