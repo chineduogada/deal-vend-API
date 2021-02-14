@@ -5,13 +5,13 @@ const CustomerFeedback = require("../models/customerFeedbackModel");
 const validateInput = require("../utils/validateInput");
 
 exports.getAllFeedbacks = catchAsync(async (req, res, next) => {
-  const feedbacks = await CustomerFeedback.find();
+  const customerFeedbacks = await CustomerFeedback.find();
 
   res.status(200).json({
     status: "success",
-    results: feedbacks.length,
+    results: customerFeedbacks.length,
     data: {
-      feedbacks,
+      customerFeedbacks,
     },
   });
 });
@@ -37,21 +37,21 @@ exports.createFeedback = catchAsync(async (req, res, next) => {
 
   const existingFeedback = await CustomerFeedback.findOne(filterObject);
 
-  let feedback;
+  let customerFeedbacks;
   if (existingFeedback) {
-    feedback = await CustomerFeedback.findOneAndReplace(
+    customerFeedbacks = await CustomerFeedback.findOneAndReplace(
       filterObject,
       req.body,
       { new: true, runValidators: true }
     );
   } else {
-    feedback = await CustomerFeedback.create(req.body);
+    customerFeedbacks = await CustomerFeedback.create(req.body);
   }
 
   res.status(201).json({
     status: "success",
     data: {
-      feedback,
+      customerFeedbacks,
     },
   });
 });

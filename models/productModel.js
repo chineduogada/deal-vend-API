@@ -77,13 +77,9 @@ const schema = new mongoose.Schema(
         return slugify(this.name);
       },
     },
-    // _seller: {
-    //   type: mongoose.S,
-    // ref:
-    // },
     // region: {
     //   type: {
-    //     type: goeJSON
+    //     type: String
     //   }
     // }
     // specification: {
@@ -119,17 +115,27 @@ const schema = new mongoose.Schema(
 
 schema.index({ slug: 1 });
 
-schema.pre("/^find/", async function (next) {
-  if (!this.isModified("name") && this.isNew) return next();
-
-  console.log("====================================");
-  console.log("WOrKING middleware >>> product 'name' has been modified");
-  console.log("====================================");
-
+schema.pre("findOneAndUpdate", async function (next) {
   const product = await this.findOne();
   product.slug = slugify(product.name);
 
   await product.save();
+
+  console.log("====================================");
+  console.log("WOrKING middleware >>> product 'name' has been slugify");
+  console.log("====================================");
+
+  next();
+});
+
+// Virtual Populate
+schema.virtual("customerFeedbacks", {
+  foreignField: "product",
+  localField: "_id",
+  ref: "CustomerFeedback",
+});
+schema.pre("findOne", function (next) {
+  this.populate({ path: "customerFeedbacks" });
 
   next();
 });

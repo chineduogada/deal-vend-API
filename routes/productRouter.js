@@ -29,12 +29,15 @@ router.get("/", productController.getAllProducts);
 router.get("/:slug", productController.getProduct);
 
 // Protect with Authentication
-router.use(
-  authController.protect,
-  authController.restrictTo("seller", "admin")
+router.use(authController.protect);
+
+router.post(
+  "/",
+  authController.restrictTo("seller"),
+  productController.createProduct
 );
 
-router.post("/", productController.createProduct);
+router.use(authController.restrictTo("seller", "admin"));
 
 router
   .route("/:slug")

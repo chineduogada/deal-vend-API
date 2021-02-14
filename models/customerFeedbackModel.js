@@ -30,6 +30,16 @@ const schema = new mongoose.Schema(
   }
 );
 
-const CustomerFeedback = mongoose.model("CustomerFeedback", schema);
+schema.pre(/^find/, function (next) {
+  this
+    // .populate({ path: "product", select: "name" })
+    .populate({
+      path: "user",
+      select: "name photo",
+    });
 
+  next();
+});
+
+const CustomerFeedback = mongoose.model("CustomerFeedback", schema);
 module.exports = CustomerFeedback;
