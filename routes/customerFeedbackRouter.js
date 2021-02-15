@@ -1,7 +1,7 @@
 const authController = require("../controllers/authController");
 const customerFeedbackController = require("../controllers/customerFeedbackController");
 
-const router = require("express").Router();
+const router = require("express").Router({ mergeParams: true });
 
 router
   .route("/")

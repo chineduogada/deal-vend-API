@@ -1,7 +1,24 @@
 const authController = require("../controllers/authController");
 const productController = require("../controllers/productController");
+const customerFeedbackRouter = require("../routes/customerFeedbackRouter");
 const router = require("express").Router();
 const slugify = require("slugify");
+
+router.use("/:productId/customer-feedbacks", customerFeedbackRouter);
+
+// router
+//   .route("/:productId/customer-feedbacks")
+//   .get(customerFeedbackController.getAllFeedbacks)
+//   .post(
+//     authController.protect,
+//     authController.restrictTo("buyer"),
+//     customerFeedbackController.createFeedback
+//   );
+
+// router.get(
+//   "/:productId/customer-feedbacks/:id",
+//   customerFeedbackController.getFeedback
+// );
 
 // Aliases
 router.get(
@@ -28,6 +45,8 @@ router.get(
 router.get("/", productController.getAllProducts);
 
 router.get("/:slug", productController.getProduct);
+
+// Nested Routes
 
 // Protect with Authentication
 router.use(authController.protect);

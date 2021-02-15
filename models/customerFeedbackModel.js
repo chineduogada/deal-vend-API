@@ -31,12 +31,17 @@ const schema = new mongoose.Schema(
 );
 
 schema.pre(/^find/, function (next) {
-  this
-    // .populate({ path: "_product", select: "name" })
-    .populate({
-      path: "_user",
-      select: "name photo",
-    });
+  // this
+  // .populate({ path: "_product", select: "name" })
+  // .populate({
+  //   path: "_user",
+  //   select: "name photo",
+  // });
+
+  this.populate({
+    path: "_user",
+    select: "name photo",
+  });
 
   next();
 });
