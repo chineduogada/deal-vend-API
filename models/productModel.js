@@ -73,12 +73,14 @@ const schema = new mongoose.Schema(
     },
     slug: {
       type: String,
-      // default: function () {
-      //   return slugify(this.name);
-      // },
-      get: function () {
+      default: function () {
         return slugify(this.name);
       },
+    },
+    _seller: {
+      type: mongoose.Schema.ObjectId,
+      ref: "User",
+      required: [true, "`_seller` is required"],
     },
     // region: {
     //   type: {
@@ -125,7 +127,12 @@ schema.virtual("customerFeedbacks", {
   ref: "CustomerFeedback",
 });
 schema.pre("findOne", function (next) {
-  this.populate({ path: "customerFeedbacks" });
+  this.populate({
+    path: "_seller",
+    select: "name photo",
+  }).populate({
+    path: "customerFeedbacks",
+  });
 
   next();
 });

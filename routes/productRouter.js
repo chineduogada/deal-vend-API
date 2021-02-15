@@ -35,6 +35,7 @@ router.use(authController.protect);
 router.post(
   "/",
   authController.restrictTo("seller"),
+  productController.beforeCreateProduct,
   productController.createProduct
 );
 
@@ -42,13 +43,7 @@ router.use(authController.restrictTo("seller", "admin"));
 
 router
   .route("/:slug")
-  .patch((req, _res, next) => {
-    if (req.body.name) {
-      req.body.slug = slugify(req.body.name);
-    }
-
-    next();
-  }, productController.updateProduct)
+  .patch(productController.beforeUpdateProduct, productController.updateProduct)
   .delete(productController.deleteProduct);
 
 module.exports = router;

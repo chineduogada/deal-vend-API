@@ -28,6 +28,7 @@ const createSchema = Joi.object({
   imageCover: Joi.string().required(),
   images: Joi.string(),
   inStock: Joi.number(),
+  _seller: Joi.string().required(),
 });
 
 const updateSchema = Joi.object({
@@ -99,6 +100,20 @@ exports.mostSearched = catchAsync(async (req, _res, next) => {
 
   next();
 });
+
+// Middlewares
+exports.beforeCreateProduct = (req, _res, next) => {
+  req.body._seller = req.user.id;
+
+  next();
+};
+exports.beforeUpdateProduct = (req, _res, next) => {
+  if (req.body.name) {
+    req.body.slug = slugify(req.body.name);
+  }
+
+  next();
+};
 
 exports.getAllProducts = getMany(Product, "products");
 exports.createProduct = createOne(Product, "product", createSchema);
