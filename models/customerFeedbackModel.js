@@ -6,11 +6,6 @@ const schema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
-    product: {
-      type: mongoose.Schema.ObjectId,
-      ref: "Product",
-      required: [true, "`product` is required"],
-    },
     rating: {
       type: Number,
       required: [true, "`rating` is required"],
@@ -18,10 +13,15 @@ const schema = new mongoose.Schema(
       max: [5.0, "`rating` can be '5.0' or less"],
     },
     review: { type: String },
-    user: {
+    _product: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Product",
+      required: [true, "`_product` is required"],
+    },
+    _user: {
       type: mongoose.Schema.ObjectId,
       ref: "User",
-      required: [true, "`user` is required"],
+      required: [true, "`_user` is required"],
     },
   },
   {
@@ -32,9 +32,9 @@ const schema = new mongoose.Schema(
 
 schema.pre(/^find/, function (next) {
   this
-    // .populate({ path: "product", select: "name" })
+    // .populate({ path: "_product", select: "name" })
     .populate({
-      path: "user",
+      path: "_user",
       select: "name photo",
     });
 

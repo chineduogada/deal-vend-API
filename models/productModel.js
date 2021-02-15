@@ -73,7 +73,10 @@ const schema = new mongoose.Schema(
     },
     slug: {
       type: String,
-      default: function () {
+      // default: function () {
+      //   return slugify(this.name);
+      // },
+      get: function () {
         return slugify(this.name);
       },
     },
@@ -115,22 +118,9 @@ const schema = new mongoose.Schema(
 
 schema.index({ slug: 1 });
 
-schema.pre("findOneAndUpdate", async function (next) {
-  const product = await this.findOne();
-  product.slug = slugify(product.name);
-
-  await product.save();
-
-  console.log("====================================");
-  console.log("WOrKING middleware >>> product 'name' has been slugify");
-  console.log("====================================");
-
-  next();
-});
-
 // Virtual Populate
 schema.virtual("customerFeedbacks", {
-  foreignField: "product",
+  foreignField: "_product",
   localField: "_id",
   ref: "CustomerFeedback",
 });

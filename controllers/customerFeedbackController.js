@@ -18,7 +18,7 @@ exports.getAllFeedbacks = catchAsync(async (req, res, next) => {
 
 exports.createFeedback = catchAsync(async (req, res, next) => {
   const schema = Joi.object({
-    product: Joi.string().required(),
+    _product: Joi.string().required(),
     rating: Joi.number().min(1).max(5).required(),
     review: Joi.string().max(250),
   });
@@ -29,10 +29,10 @@ exports.createFeedback = catchAsync(async (req, res, next) => {
     return next(new AppError(error.details[0].message, 400));
   }
 
-  req.body = { ...req.body, user: req.user.id };
+  req.body = { ...req.body, _user: req.user.id };
   const filterObject = {
-    product: req.body.product,
-    user: req.body.user,
+    _product: req.body._product,
+    _user: req.body._user,
   };
 
   const existingFeedback = await CustomerFeedback.findOne(filterObject);

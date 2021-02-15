@@ -1,6 +1,7 @@
-const router = require("express").Router();
-const productController = require("../controllers/productController");
 const authController = require("../controllers/authController");
+const productController = require("../controllers/productController");
+const router = require("express").Router();
+const slugify = require("slugify");
 
 // Aliases
 router.get(
@@ -41,7 +42,13 @@ router.use(authController.restrictTo("seller", "admin"));
 
 router
   .route("/:slug")
-  .patch(productController.updateProduct)
+  .patch((req, _res, next) => {
+    if (req.body.name) {
+      req.body.slug = slugify(req.body.name);
+    }
+
+    next();
+  }, productController.updateProduct)
   .delete(productController.deleteProduct);
 
 module.exports = router;
