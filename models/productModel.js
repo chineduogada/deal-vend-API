@@ -1,8 +1,47 @@
 const mongoose = require("mongoose");
-const slugify = require("slugify");
 
 const schema = new mongoose.Schema(
   {
+    category: {
+      type: String,
+      enum: {
+        values: ["computer", "phone and tablet"],
+        validate: "`category` can be either 'computer' or 'phone and tablet'",
+      },
+      required: [true, "`category` is required"],
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+      select: false,
+    },
+    dealOffer: String,
+    description: {
+      type: String,
+      trim: true,
+      required: [true, "`description` is required"],
+      minlength: [20, "`title` can be '20' or more characters"],
+      maxlength: [500, "`title` can be '500' or less characters"],
+    },
+    discount: { type: Number, default: 10 },
+    imageCover: {
+      type: String,
+      trim: true,
+      required: [true, "`imageCover` is required"],
+    },
+    images: [String],
+    inStock: {
+      type: Number,
+      default: 1,
+    },
+    ItemsInBox: {
+      type: [
+        {
+          name: String,
+          value: String,
+        },
+      ],
+    },
     name: {
       type: String,
       trim: true,
@@ -15,32 +54,6 @@ const schema = new mongoose.Schema(
       trim: true,
       required: [true, "`price` is required"],
     },
-    description: {
-      type: String,
-      trim: true,
-      required: [true, "`description` is required"],
-      minlength: [20, "`title` can be '20' or more characters"],
-      maxlength: [500, "`title` can be '500' or less characters"],
-    },
-    category: {
-      type: String,
-      enum: {
-        values: ["computer", "phone and tablet"],
-        validate: "`category` can be either 'computer' or 'phone and tablet'",
-      },
-      required: [true, "`category` is required"],
-    },
-    shippedFromAbroad: Boolean,
-    dealOffer: String,
-    discount: { type: Number, default: 10 },
-    ItemsInBox: {
-      type: [
-        {
-          name: String,
-          value: String,
-        },
-      ],
-    },
     ratingsQuantity: { type: Number, default: 0 },
     ratingsAverage: {
       type: Number,
@@ -48,21 +61,7 @@ const schema = new mongoose.Schema(
       max: [5.0, "`ratingsAverage` can be '5' or less"],
       default: 1.0,
     },
-    imageCover: {
-      type: String,
-      trim: true,
-      required: [true, "`imageCover` is required"],
-    },
-    images: [String],
-    createdAt: {
-      type: Date,
-      default: Date.now,
-      select: false,
-    },
-    inStock: {
-      type: Number,
-      default: 1,
-    },
+    shippedFromAbroad: Boolean,
     salesCount: {
       type: Number,
       default: 0,
@@ -73,9 +72,6 @@ const schema = new mongoose.Schema(
     },
     slug: {
       type: String,
-      default: function () {
-        return slugify(this.name);
-      },
     },
     _seller: {
       type: mongoose.Schema.ObjectId,
