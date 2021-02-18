@@ -275,6 +275,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   existingUser.password = req.body.newPassword;
   existingUser.passwordResetToken = undefined;
   existingUser.passwordResetTokenExpiresAt = undefined;
+
   await existingUser.save();
 
   const token = await signJWT({ user: existingUser });

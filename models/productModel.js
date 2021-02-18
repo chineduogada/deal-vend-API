@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const slugify = require("slugify");
 
 const schema = new mongoose.Schema(
   {
@@ -54,7 +55,7 @@ const schema = new mongoose.Schema(
       trim: true,
       required: [true, "`price` is required"],
     },
-    ratingsQuantity: { type: Number, default: 0 },
+    ratingsQuantity: { type: Number },
     ratingsAverage: {
       type: Number,
       min: [1.0, "`ratingsAverage` can be '1' or more"],
@@ -64,14 +65,15 @@ const schema = new mongoose.Schema(
     shippedFromAbroad: Boolean,
     salesCount: {
       type: Number,
-      default: 0,
     },
     searchCount: {
       type: Number,
-      default: 0,
     },
     slug: {
       type: String,
+      default: function () {
+        return slugify(this.name);
+      },
     },
     _seller: {
       type: mongoose.Schema.ObjectId,
@@ -116,7 +118,7 @@ const schema = new mongoose.Schema(
 
 schema.index({ slug: 1 });
 
-// Virtual Populate
+// adds child referencing to CustomerFeedback virtually
 schema.virtual("customerFeedbacks", {
   foreignField: "_product",
   localField: "_id",
@@ -132,6 +134,13 @@ schema.pre("findOne", function (next) {
   });
 
   next();
+});
+
+schema.post("findOneAndUpdate", async function () {
+  const product = await this.findOne();
+  product.slug = slugify(product.name);
+
+  await product.save();
 });
 
 const Product = mongoose.model("Product", schema);

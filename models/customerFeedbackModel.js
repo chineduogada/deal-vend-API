@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Product = require("./productModel");
 
 const schema = new mongoose.Schema(
   {
@@ -31,12 +32,7 @@ const schema = new mongoose.Schema(
 );
 
 schema.pre(/^find/, function (next) {
-  // this
-  // .populate({ path: "_product", select: "name" })
-  // .populate({
-  //   path: "_user",
-  //   select: "name photo",
-  // });
+  // this = query e.g Model.find()
 
   this.populate({
     path: "_user",

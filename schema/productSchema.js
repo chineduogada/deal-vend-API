@@ -14,11 +14,10 @@ exports.create = Joi.object({
       value: Joi.string().required(),
     })
   ),
-  ratingsQuantity: Joi.number(),
-  ratingsAverage: Joi.number().min(1).max(5),
   imageCover: Joi.string().required(),
   images: Joi.string(),
   inStock: Joi.number(),
+  slug: Joi.string(),
   _seller: Joi.string().required(),
 });
 
@@ -37,8 +36,6 @@ exports.update = Joi.object({
       value: Joi.string().required(),
     })
   ),
-  ratingsQuantity: Joi.number(),
-  ratingsAverage: Joi.number().min(1).max(5),
   imageCover: Joi.string(),
   images: Joi.string(),
   inStock: Joi.number(),

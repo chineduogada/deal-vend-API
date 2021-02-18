@@ -57,7 +57,7 @@ router.use(authController.restrictTo("seller", "admin"));
 
 router
   .route("/:slug")
-  .patch(productMiddleware.beforeUpdateProduct, productController.updateProduct)
+  .patch(productController.updateProduct)
   .delete(productController.deleteProduct);
 
 module.exports = router;

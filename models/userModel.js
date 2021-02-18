@@ -79,6 +79,8 @@ schema.pre("save", function (next) {
   if (this.isNew || !this.isModified("password")) return next();
 
   this.passwordChangedAt = Date.now() - 1000;
+
+  next();
 });
 
 schema.methods.isPasswordCorrect = async function (
