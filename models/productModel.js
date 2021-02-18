@@ -55,13 +55,13 @@ const schema = new mongoose.Schema(
       trim: true,
       required: [true, "`price` is required"],
     },
-    ratingsQuantity: { type: Number },
     ratingsAverage: {
       type: Number,
       min: [1.0, "`ratingsAverage` can be '1' or more"],
       max: [5.0, "`ratingsAverage` can be '5' or less"],
       default: 1.0,
     },
+    ratingsQuantity: { type: Number },
     shippedFromAbroad: Boolean,
     salesCount: {
       type: Number,

@@ -42,5 +42,53 @@ schema.pre(/^find/, function (next) {
   next();
 });
 
+schema.statics.calcRatingStats = async function (_product) {
+  const stats = await this.aggregate([
+    {
+      $match: { _product },
+    },
+    {
+      $group: {
+        _id: "$_product",
+        avgRating: { $avg: "$rating" },
+        nRating: { $sum: 1 },
+      },
+    },
+  ]);
+
+  await Product.findByIdAndUpdate(
+    _product,
+    {
+      ratingsAverage: stats[0].avgRating,
+      ratingsQuantity: stats[0].nRating,
+    },
+    { runValidators: true }
+  );
+};
+
+schema.post("save", function () {
+  // this = document
+  // this.constructor = Model
+  const product = this;
+
+  product.constructor.calcRatingStats(product._product);
+});
+schema.pre(/^findOneAnd/, async function (next) {
+  // this = Query
+  // USE: await this.findOne = the document to be updated or deleted
+
+  this.product = await this.findOne();
+
+  next();
+});
+schema.post(/^findOneAnd/, function () {
+  // this = Query
+  // DON"T USE: await this.findOne = the `updated document`, and `null`:(deleted document)
+  // USE: this.product = the document to be updated or deleted
+  const { product } = this;
+
+  product.constructor.calcRatingStats(product._product);
+});
+
 const CustomerFeedback = mongoose.model("CustomerFeedback", schema);
 module.exports = CustomerFeedback;
