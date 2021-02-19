@@ -29,10 +29,7 @@ exports.createProduct = [
   createOne(Product, "product", schema.create),
 ];
 
-exports.deleteProduct = [
-  beforeUpdateAndDelete,
-  deleteOne(Product, "product", "slug"),
-];
+exports.deleteProduct = [beforeUpdateAndDelete, deleteOne(Product, "product")];
 
 exports.getAllProducts = getMany(Product, "products");
 
