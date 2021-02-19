@@ -1,8 +1,6 @@
 const router = require("express").Router();
 const authController = require("../controllers/authController");
 const userController = require("../controllers/userController");
-const factory = require("../controllers/handleFactory");
-const User = require("../models/userModel");
 
 router.post("/auth/signup", authController.signUp);
 router.post("/auth/login", authController.login);
@@ -26,7 +24,7 @@ router.use(authController.protect);
 
 router.patch("/auth/change-my-password", authController.changeMyPassword);
 
-router.get("/me", userController.getMe, factory.getOne(User, "user"));
+router.get("/me", ...userController.getMe);
 router.patch("/update-me", userController.updateMe);
 
 router.delete("/delete-me", authController.deactivateAccount);

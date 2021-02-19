@@ -7,17 +7,33 @@ const {
   updateOne,
   deleteOne,
 } = require("./handleFactory");
-// const Joi = require("joi");
-// const AppError = require("../utils/AppError");
-// const catchAsync = require("../utils/catchAsync");
 
-exports.getAllFeedbacks = getMany(CustomerFeedback, "customerFeedbacks");
+exports.getAllFeedbacks = [
+  (req, _res, next) => {
+    req.filterOptions = {
+      _product: req.params.productId,
+    };
+
+    next();
+  },
+  getMany(CustomerFeedback, "customerFeedbacks"),
+];
+
 exports.getFeedback = getOne(CustomerFeedback, "customerFeedback");
-exports.createFeedback = createOne(
-  CustomerFeedback,
-  "customerFeedback",
-  schema.create
-);
+
+exports.createFeedback = [
+  (req, _res, next) => {
+    req.body = {
+      ...req.body,
+      _product: req.params.productId,
+      _user: req.user.id,
+    };
+
+    next();
+  },
+  createOne(CustomerFeedback, "customerFeedback", schema.create),
+];
+
 exports.updateFeedback = updateOne(
   CustomerFeedback,
   "customerFeedback",

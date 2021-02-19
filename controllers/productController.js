@@ -58,7 +58,19 @@ exports.mostSearched = catchAsync(async (req, _res, next) => {
 });
 
 exports.getAllProducts = getMany(Product, "products");
-exports.createProduct = createOne(Product, "product", schema.create);
+
+exports.createProduct = [
+  (req, _res, next) => {
+    req.body = {
+      ...req.body,
+      _seller: req.user.id,
+    };
+
+    next();
+  },
+  createOne(Product, "product", schema.create),
+];
+
 exports.getProduct = getOne(Product, "product", "slug");
 exports.updateProduct = updateOne(Product, "product", schema.update, "slug");
 exports.deleteProduct = deleteOne(Product, "product", "slug");

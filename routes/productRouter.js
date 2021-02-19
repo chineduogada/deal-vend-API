@@ -1,6 +1,5 @@
 const authController = require("../controllers/authController");
 const productController = require("../controllers/productController");
-const productMiddleware = require("../middlewares/productMiddleware");
 const customerFeedbackRouter = require("../routes/customerFeedbackRouter");
 const router = require("express").Router();
 
@@ -49,8 +48,7 @@ router.use(authController.protect);
 router.post(
   "/",
   authController.restrictTo("seller"),
-  productMiddleware.beforeCreateProduct,
-  productController.createProduct
+  ...productController.createProduct
 );
 
 router.use(authController.restrictTo("seller", "admin"));

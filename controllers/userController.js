@@ -19,11 +19,14 @@ exports.createUser = catchAsync(async (_req, _res, next) => {
     )
   );
 });
-exports.getMe = (req, _res, next) => {
-  req.params.id = req.user.id;
+exports.getMe = [
+  (req, _res, next) => {
+    req.params.id = req.user.id;
 
-  next();
-};
+    next();
+  },
+  factory.getOne(User, "user"),
+];
 exports.updateMe = catchAsync(async (req, res, next) => {
   // 1. Throw an Error if password data is POSTed
   if (req.body.password) {
