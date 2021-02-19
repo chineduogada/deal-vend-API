@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const slugify = require("slugify");
+const { validate } = require("./customerFeedbackModel");
 
 const schema = new mongoose.Schema(
   {
@@ -60,6 +61,7 @@ const schema = new mongoose.Schema(
       min: [1.0, "`ratingsAverage` can be '1' or more"],
       max: [5.0, "`ratingsAverage` can be '5' or less"],
       default: 1.0,
+      set: (val) => Math.round(val * 10) / 10,
     },
     ratingsQuantity: { type: Number },
     shippedFromAbroad: Boolean,

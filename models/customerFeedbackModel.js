@@ -31,6 +31,8 @@ const schema = new mongoose.Schema(
   }
 );
 
+schema.index({ _product: 1, _user: 1 }, { unique: true });
+
 schema.pre(/^find/, function (next) {
   // this = query e.g Model.find()
 
@@ -56,14 +58,21 @@ schema.statics.calcRatingStats = async function (_product) {
     },
   ]);
 
-  await Product.findByIdAndUpdate(
-    _product,
-    {
-      ratingsAverage: stats[0].avgRating,
-      ratingsQuantity: stats[0].nRating,
-    },
-    { runValidators: true }
-  );
+  if (stats.length > 0) {
+    await Product.findByIdAndUpdate(
+      _product,
+      {
+        ratingsAverage: stats[0].avgRating,
+        ratingsQuantity: stats[0].nRating,
+      },
+      { runValidators: true }
+    );
+  } else {
+    await Product.findByIdAndUpdate(_product, {
+      ratingsAverage: 1,
+      ratingsQuantity: 0,
+    });
+  }
 };
 
 schema.post("save", function () {
