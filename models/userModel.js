@@ -4,6 +4,35 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 
 const schema = new mongoose.Schema({
+  active: {
+    type: Boolean,
+    default: true,
+    select: false,
+  },
+  bio: {
+    type: String,
+    trim: true,
+    minlength: [10, "`bio` can be '10' or more characters"],
+    maxlength: [30, "`bio` can be '30' or less characters"],
+  },
+  createAt: {
+    type: Date,
+    select: false,
+    default: Date.now,
+  },
+  email: {
+    type: String,
+    validate: [validator.isEmail, "`email` must be valid"],
+    required: [true, "`email` is required"],
+    unique: true,
+    lowercase: true,
+  },
+  emailConfirmToken: String,
+  emailConfirmTokenExpiresAt: Date,
+  emailVerified: {
+    type: Boolean,
+    default: false,
+  },
   name: {
     type: String,
     required: [true, "`name` is required"],
@@ -17,19 +46,10 @@ const schema = new mongoose.Schema({
     minlength: [8, "`password` can be '8' or more characters"],
     select: false,
   },
-  email: {
-    type: String,
-    validate: [validator.isEmail, "`email` must be valid"],
-    required: [true, "`email` is required"],
-    unique: true,
-    lowercase: true,
-  },
-  bio: {
-    type: String,
-    trim: true,
-    minlength: [10, "`bio` can be '10' or more characters"],
-    maxlength: [30, "`bio` can be '30' or less characters"],
-  },
+  passwordChangedAt: Date,
+  passwordResetToken: String,
+  passwordResetTokenExpiresAt: Date,
+  photo: String,
   role: {
     type: String,
     enum: {
@@ -38,31 +58,6 @@ const schema = new mongoose.Schema({
       validate: "`category` can be either 'buyer', 'seller' or 'admin'",
     },
     default: "buyer",
-  },
-  createAt: {
-    type: Date,
-    select: false,
-    default: Date.now,
-  },
-
-  active: {
-    type: Boolean,
-    default: true,
-    select: false,
-  },
-
-  photo: String,
-
-  passwordChangedAt: Date,
-  passwordResetToken: String,
-  passwordResetTokenExpiresAt: Date,
-
-  emailConfirmToken: String,
-  emailConfirmTokenExpiresAt: Date,
-
-  emailVerified: {
-    type: Boolean,
-    default: false,
   },
 });
 
