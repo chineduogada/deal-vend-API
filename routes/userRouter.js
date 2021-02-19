@@ -31,6 +31,12 @@ router.patch("/update-me", userController.updateMe);
 
 router.delete("/delete-me", authController.deactivateAccount);
 
+router.patch(
+  "/create-seller-account",
+  authController.restrictTo("buyer"),
+  ...userController.createSellerAccount
+);
+
 router.use(authController.restrictTo("admin"));
 
 router

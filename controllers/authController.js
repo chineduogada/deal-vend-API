@@ -109,10 +109,22 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError("invalid `email` or `password`"));
   }
 
-  if (req.body.asSeller && existingUser.sellerAccount) {
-    (existingUser.role = "seller"), await existingUser.save();
-  } else {
-    return next(new AppError("You don't have a `seller` account!", 400));
+  console.log("====================================");
+  console.log(req.body.asSeller === true && existingUser.sellerAccount);
+  console.log("====================================");
+
+  if (existingUser.role !== "admin") {
+    if (req.body.asSeller) {
+      if (existingUser.sellerAccount) {
+        existingUser.role = "seller";
+        await existingUser.save();
+      } else {
+        return next(new AppError("You don't have a `seller` account!", 400));
+      }
+    } else {
+      existingUser.role = "buyer";
+      await existingUser.save();
+    }
   }
 
   if (existingUser.passwordResetToken) {

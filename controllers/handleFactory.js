@@ -30,10 +30,12 @@ exports.getMany = (Model, docName = "document") =>
 
 exports.createOne = (Model, docName = "document", schema) =>
   catchAsync(async (req, res, next) => {
-    const error = validateInput(req.body, schema);
+    if (schema) {
+      const error = validateInput(req.body, schema);
 
-    if (error) {
-      return next(new AppError(error.details[0].message, 400));
+      if (error) {
+        return next(new AppError(error.details[0].message, 400));
+      }
     }
 
     const doc = await Model.create(req.body);
@@ -75,10 +77,12 @@ exports.getOne = (Model, docName = "document", filterField, populateOptions) =>
 
 exports.updateOne = (Model, docName = "document", schema, filterField) =>
   catchAsync(async (req, res, next) => {
-    const error = validateInput(req.body, schema);
+    if (schema) {
+      const error = validateInput(req.body, schema);
 
-    if (error) {
-      return next(new AppError(error.details[0].message, 400));
+      if (error) {
+        return next(new AppError(error.details[0].message, 400));
+      }
     }
 
     const doc = filterField

@@ -12,12 +12,18 @@ const updateSchema = Joi.object({
   bio: Joi.string().min(10).max(30),
 });
 
+exports.createUser = catchAsync(async (_req, _res, next) => {
+  return next(
+    new AppError(
+      "This route is not defined! Please use `/api/v1/users/auth/signup` instead."
+    )
+  );
+});
 exports.getMe = (req, _res, next) => {
   req.params.id = req.user.id;
 
   next();
 };
-
 exports.updateMe = catchAsync(async (req, res, next) => {
   // 1. Throw an Error if password data is POSTed
   if (req.body.password) {
@@ -55,15 +61,16 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.createUser = catchAsync(async (_req, _res, next) => {
-  return next(
-    new AppError(
-      "This route is not defined! Please use `/api/v1/users/auth/signup` instead."
-    )
-  );
-});
-
 exports.getAllUsers = factory.getMany(User, "users");
 exports.getUser = factory.getOne(User, "user");
 exports.updateUser = factory.updateOne(User, "user", updateSchema);
 exports.deleteUser = factory.deleteOne(User, "user");
+exports.createSellerAccount = [
+  (req, _res, next) => {
+    req.body = { role: "seller", sellerAccount: true };
+    req.params.id = req.user.id;
+
+    next();
+  },
+  factory.updateOne(User, "user"),
+];
