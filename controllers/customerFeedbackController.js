@@ -8,19 +8,15 @@ const {
   deleteOne,
 } = require("./handleFactory");
 
-exports.getAllFeedbacks = [
-  (req, _res, next) => {
-    req.filterOptions = {
-      _product: req.params.productId,
-    };
+// Middleware helpers
+const beforeUpdateAndDelete = (req, _res, next) => {
+  req.filterOptions = { _id: req.params.id, _user: req.user.id };
 
-    next();
-  },
-  getMany(CustomerFeedback, "customerFeedbacks"),
-];
+  next();
+};
+// EndOf Middleware helpers
 
-exports.getFeedback = getOne(CustomerFeedback, "customerFeedback");
-
+// Primary controllers
 exports.createFeedback = [
   (req, _res, next) => {
     req.body = {
@@ -34,9 +30,26 @@ exports.createFeedback = [
   createOne(CustomerFeedback, "customerFeedback", schema.create),
 ];
 
-exports.updateFeedback = updateOne(
-  CustomerFeedback,
-  "customerFeedback",
-  schema.update
-);
-exports.deleteFeedback = deleteOne(CustomerFeedback, "customerFeedback");
+exports.deleteFeedback = [
+  beforeUpdateAndDelete,
+  deleteOne(CustomerFeedback, "customerFeedback"),
+];
+
+exports.getAllFeedbacks = [
+  (req, _res, next) => {
+    req.filterOptions = {
+      _product: req.params.productId,
+    };
+
+    next();
+  },
+  getMany(CustomerFeedback, "customerFeedbacks"),
+];
+
+exports.getFeedback = getOne(CustomerFeedback, "customerFeedback");
+
+exports.updateFeedback = [
+  beforeUpdateAndDelete,
+  updateOne(CustomerFeedback, "customerFeedback", schema.update),
+];
+// EndOf Primary controllers

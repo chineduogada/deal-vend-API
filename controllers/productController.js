@@ -1,5 +1,4 @@
 const Product = require("../models/productModel");
-const catchAsync = require("../utils/catchAsync");
 const {
   getMany,
   getOne,
@@ -9,56 +8,15 @@ const {
 } = require("./handleFactory");
 const schema = require("../schema/productSchema");
 
-exports.topSales = catchAsync(async (req, _res, next) => {
-  req.query = {
-    ...req.query,
-    inStock: { gte: 1 },
-    sort: "-salesCount",
-    limit: 10,
-  };
+// Middleware helpers
+const beforeUpdateAndDelete = (req, _res, next) => {
+  req.filterOptions = { slug: req.params.slug, _seller: req.user.id };
 
   next();
-});
+};
+// EndOf Middleware helpers
 
-exports.topCheap = catchAsync(async (req, _res, next) => {
-  req.query = {
-    ...req.query,
-    inStock: { gte: 1 },
-    sort: "-ratingsAverage,price",
-    limit: 10,
-  };
-
-  next();
-});
-
-exports.dealsOfTheDay = catchAsync(async (req, _res, next) => {
-  const now = new Date();
-
-  req.query = {
-    ...req.query,
-    inStock: { gte: 1 },
-    createdAt: {
-      gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
-    },
-    limit: req.query.limit || 10,
-  };
-
-  next();
-});
-
-exports.mostSearched = catchAsync(async (req, _res, next) => {
-  req.query = {
-    ...req.query,
-    inStock: { gte: 1 },
-    sort: "-searchCount,-ratingsAverage",
-    limit: req.query.limit || 10,
-  };
-
-  next();
-});
-
-exports.getAllProducts = getMany(Product, "products");
-
+// Primary controllers
 exports.createProduct = [
   (req, _res, next) => {
     req.body = {
@@ -71,6 +29,86 @@ exports.createProduct = [
   createOne(Product, "product", schema.create),
 ];
 
-exports.getProduct = getOne(Product, "product", "slug");
-exports.updateProduct = updateOne(Product, "product", schema.update, "slug");
-exports.deleteProduct = deleteOne(Product, "product", "slug");
+exports.deleteProduct = [
+  beforeUpdateAndDelete,
+  deleteOne(Product, "product", "slug"),
+];
+
+exports.getAllProducts = getMany(Product, "products");
+
+exports.getProduct = [
+  (req, _res, next) => {
+    req.filterOptions = { slug: req.params.slug };
+
+    next();
+  },
+  getOne(Product, "product"),
+];
+
+exports.updateProduct = [
+  beforeUpdateAndDelete,
+  updateOne(Product, "product", schema.update),
+];
+// EndOf Primary controllers
+
+// Secondary controllers
+exports.dealsOfTheDay = [
+  (req, _res, next) => {
+    const now = new Date();
+
+    req.query = {
+      ...req.query,
+      inStock: { gte: 1 },
+      createdAt: {
+        gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+      },
+      limit: req.query.limit || 10,
+    };
+
+    next();
+  },
+  this.getAllProducts,
+];
+
+exports.topCheap = [
+  (req, _res, next) => {
+    req.query = {
+      ...req.query,
+      inStock: { gte: 1 },
+      sort: "-ratingsAverage,price",
+      limit: 10,
+    };
+
+    next();
+  },
+  this.getAllProducts,
+];
+
+exports.mostSearched = [
+  (req, _res, next) => {
+    req.query = {
+      ...req.query,
+      inStock: { gte: 1 },
+      sort: "-searchCount,-ratingsAverage",
+      limit: req.query.limit || 10,
+    };
+
+    next();
+  },
+  this.getAllProducts,
+];
+
+exports.topSales = [
+  (req, _res, next) => {
+    req.query = {
+      ...req.query,
+      inStock: { gte: 1 },
+      sort: "-salesCount",
+      limit: 10,
+    };
+
+    next();
+  },
+  this.getAllProducts,
+];
+// EndOf Secondary controllers

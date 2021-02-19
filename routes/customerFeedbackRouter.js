@@ -12,6 +12,6 @@ router.post("/", ...customerFeedbackController.createFeedback);
 
 router
   .route("/:id")
-  .patch(customerFeedbackController.updateFeedback)
-  .delete(customerFeedbackController.deleteFeedback);
+  .patch(...customerFeedbackController.updateFeedback)
+  .delete(...customerFeedbackController.deleteFeedback);
 module.exports = router;

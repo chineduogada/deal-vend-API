@@ -96,7 +96,9 @@ schema.post(/^findOneAnd/, function () {
   // USE: this.product = the document to be updated or deleted
   const { product } = this;
 
-  product.constructor.calcRatingStats(product._product);
+  if (product) {
+    product.constructor.calcRatingStats(product._product);
+  }
 });
 
 const CustomerFeedback = mongoose.model("CustomerFeedback", schema);

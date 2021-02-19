@@ -48,20 +48,26 @@ exports.createOne = (Model, docName = "document", schema) =>
     });
   });
 
-exports.getOne = (Model, docName = "document", filterField, populateOptions) =>
+exports.getOne = (Model, docName = "document", populateOptions) =>
   catchAsync(async (req, res, next) => {
-    let query = filterField
-      ? Model.findOne({ [filterField]: req.params[filterField] })
-      : Model.findById(req.params.id);
+    const filterOptions = !req.filterOptions
+      ? { _id: req.params.id }
+      : req.filterOptions;
+
+    let query = Model.findOne(filterOptions);
+
     if (populateOptions) {
       query = query.populate(populateOptions);
     }
+
     const doc = await query;
 
     if (!doc) {
       return next(
         new AppError(
-          `No '${docName}' with the given \`${filterField || "id"}\`!`,
+          !req.filterOptions
+            ? `No \`${docName}\` with the given \`id\`!`
+            : `The \`${docName}\` specified is not found!`,
           404
         )
       );
@@ -75,7 +81,7 @@ exports.getOne = (Model, docName = "document", filterField, populateOptions) =>
     });
   });
 
-exports.updateOne = (Model, docName = "document", schema, filterField) =>
+exports.updateOne = (Model, docName = "document", schema) =>
   catchAsync(async (req, res, next) => {
     if (schema) {
       const error = validateInput(req.body, schema);
@@ -85,24 +91,21 @@ exports.updateOne = (Model, docName = "document", schema, filterField) =>
       }
     }
 
-    const doc = filterField
-      ? await Model.findOneAndUpdate(
-          { [filterField]: req.params[filterField] },
-          req.body,
-          {
-            new: true,
-            runValidators: true,
-          }
-        )
-      : await Model.findByIdAndUpdate(req.params.id, req.body, {
-          new: true,
-          runValidators: true,
-        });
+    const filterOptions = !req.filterOptions
+      ? { _id: req.params.id }
+      : req.filterOptions;
+
+    let doc = await Model.findOneAndUpdate(filterOptions, req.body, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!doc) {
       return next(
         new AppError(
-          `No '${docName}' with the given \`${filterField || "id"}\`!`,
+          !req.filterOptions
+            ? `No \`${docName}\` with the given \`id\`!`
+            : `The \`${docName}\` specified is not found!`,
           404
         )
       );
@@ -116,16 +119,20 @@ exports.updateOne = (Model, docName = "document", schema, filterField) =>
     });
   });
 
-exports.deleteOne = (Model, docName = "document", filterField) =>
+exports.deleteOne = (Model, docName = "document") =>
   catchAsync(async (req, res, next) => {
-    const doc = filterField
-      ? await Model.findOneAndRemove({ [filterField]: req.params[filterField] })
-      : await Model.findByIdAndRemove(req.params.id);
+    const filterOptions = !req.filterOptions
+      ? { _id: req.params.id }
+      : req.filterOptions;
+
+    let doc = await Model.findOneAndRemove(filterOptions);
 
     if (!doc) {
       return next(
         new AppError(
-          `No '${docName}' with the given \`${filterField || "id"}\`!`,
+          !req.filterOptions
+            ? `No \`${docName}\` with the given \`id\`!`
+            : `The \`${docName}\` specified is not found!`,
           404
         )
       );
