@@ -119,6 +119,7 @@ const schema = new mongoose.Schema(
 );
 
 schema.index({ slug: 1 });
+schema.index({ _seller: 1, name: 1 }, { unique: true });
 
 // adds child referencing to CustomerFeedback virtually
 schema.virtual("customerFeedbacks", {
