@@ -59,6 +59,7 @@ const schema = new mongoose.Schema({
     },
     default: "buyer",
   },
+  sellerAccount: Boolean,
 });
 
 schema.pre("save", async function (next) {

@@ -87,6 +87,7 @@ exports.login = catchAsync(async (req, res, next) => {
   const schema = Joi.object({
     password: Joi.string().min(8).required(),
     email: Joi.string().email().required(),
+    asSeller: Joi.bool(),
   });
 
   const error = validateInput(req.body, schema);
@@ -95,7 +96,7 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   const existingUser = await User.findOne({ email: req.body.email }).select(
-    "+password +email"
+    "+password"
   );
 
   if (
@@ -106,6 +107,12 @@ exports.login = catchAsync(async (req, res, next) => {
     ))
   ) {
     return next(new AppError("invalid `email` or `password`"));
+  }
+
+  if (req.body.asSeller && existingUser.sellerAccount) {
+    (existingUser.role = "seller"), await existingUser.save();
+  } else {
+    return next(new AppError("You don't have a `seller` account!", 400));
   }
 
   if (existingUser.passwordResetToken) {
