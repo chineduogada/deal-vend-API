@@ -9,6 +9,7 @@ const express = require("express");
 const cors = require("cors");
 const productRouter = require("./routes/productRouter");
 const userRouter = require("./routes/userRouter");
+const customerFeedbackRouter = require("./routes/customerFeedbackRouter");
 const errorController = require("./controllers/errorController");
 const AppError = require("./utils/AppError");
 
@@ -18,8 +19,10 @@ app.use(cors());
 
 app.use(express.json());
 
-app.use("/api/v1/products", productRouter);
+// Routes
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/products", productRouter);
+// app.use("/api/v1/customer-feedbacks", customerFeedbackRouter);
 
 app.use("*", (req, _res, next) => {
   next(
@@ -29,6 +32,7 @@ app.use("*", (req, _res, next) => {
   );
 });
 
+// Global Error handler
 app.use(errorController);
 
 module.exports = app;

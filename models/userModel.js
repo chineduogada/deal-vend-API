@@ -33,6 +33,7 @@ const schema = new mongoose.Schema({
   role: {
     type: String,
     enum: {
+      // "supplier", "customer"
       values: ["buyer", "seller", "admin"],
       validate: "`category` can be either 'buyer', 'seller' or 'admin'",
     },
@@ -78,6 +79,8 @@ schema.pre("save", function (next) {
   if (this.isNew || !this.isModified("password")) return next();
 
   this.passwordChangedAt = Date.now() - 1000;
+
+  next();
 });
 
 schema.methods.isPasswordCorrect = async function (
