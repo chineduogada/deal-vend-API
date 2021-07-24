@@ -5,8 +5,8 @@ const factory = require("../controllers/handleFactory");
 const User = require("../models/userModel");
 
 router.post("/auth/signup", authController.signUp);
-
 router.post("/auth/login", authController.login);
+router.post("/auth/logout", authController.logout);
 
 router.post(
   "/auth/forgot-password",
