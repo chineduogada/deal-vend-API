@@ -125,6 +125,14 @@ exports.login = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.logout = catchAsync(async (_req, res) => {
+  res.clearCookie();
+
+  res.status(200).json({
+    status: "success",
+  });
+});
+
 exports.protect = catchAsync(async (req, _res, next) => {
   let token;
 
