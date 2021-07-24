@@ -128,8 +128,8 @@ exports.login = catchAsync(async (req, res, next) => {
 exports.protect = catchAsync(async (req, _res, next) => {
   let token;
 
-  if (res.cookies.token) {
-    token = res.cookies.token;
+  if (req.cookies.token) {
+    token = req.cookies.token;
   } else if (
     (req.headers.authorization &&
       req.headers.authorization.startsWith("Bearer")) ||
