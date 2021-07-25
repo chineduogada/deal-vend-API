@@ -22,7 +22,17 @@ const signJWT = async ({ user, payload }) => {
     expiresIn: process.env.JWT_EXPIRES,
   });
 
-  return token;
+  const cookieOptions = {
+    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+    sameSite: "lax",
+  };
+
+  if (process.env.NODE_ENV === "production") {
+    cookieOptions.secure = true;
+  }
+
+  return { token, cookieOptions };
 };
 
 exports.inputEmailAddress = catchAsync(async (req, _res, next) => {
@@ -70,7 +80,9 @@ exports.signUp = catchAsync(async (req, res, next) => {
     email: user.email,
   };
 
-  const token = await signJWT({ payload: user });
+  const { token, cookieOptions } = await signJWT({ payload: user });
+
+  res.cookie("token", token, cookieOptions);
 
   res.status(201).json({
     status: "success",
@@ -84,16 +96,6 @@ exports.signUp = catchAsync(async (req, res, next) => {
 });
 
 exports.login = catchAsync(async (req, res, next) => {
-  const schema = Joi.object({
-    password: Joi.string().min(8).required(),
-    email: Joi.string().email().required(),
-  });
-
-  const error = validateInput(req.body, schema);
-  if (error) {
-    return next(new AppError(error.details[0].message, 400));
-  }
-
   const existingUser = await User.findOne({ email: req.body.email }).select(
     "+password +email"
   );
@@ -105,7 +107,7 @@ exports.login = catchAsync(async (req, res, next) => {
       existingUser.password
     ))
   ) {
-    return next(new AppError("invalid `email` or `password`"));
+    return next(new AppError("invalid `email` or `password`", 400));
   }
 
   if (existingUser.passwordResetToken) {
@@ -114,7 +116,9 @@ exports.login = catchAsync(async (req, res, next) => {
     await existingUser.save();
   }
 
-  const token = await signJWT({ user: existingUser });
+  const { token, cookieOptions } = await signJWT({ user: existingUser });
+
+  res.cookie("token", token, cookieOptions);
 
   res.status(200).json({
     status: "success",
@@ -122,15 +126,26 @@ exports.login = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.logout = catchAsync(async (_req, res) => {
+  res.clearCookie("token");
+
+  res.status(200).json({
+    status: "success",
+  });
+});
+
 exports.protect = catchAsync(async (req, _res, next) => {
   let token;
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    token = req.headers.authorization.replace("Bearer ", "");
+  if (req.cookies.token) {
+    token = req.cookies.token;
   }
+  // else if (
+  //   req.headers.authorization &&
+  //   req.headers.authorization.startsWith("Bearer")
+  // ) {
+  //   token = req.headers.authorization.replace("Bearer ", "");
+  // }
 
   if (!token) {
     return next(
@@ -205,7 +220,9 @@ exports.changeMyPassword = catchAsync(async (req, res, next) => {
   await existingUser.save();
 
   // Login the user in
-  const token = await signJWT({ user: req.user });
+  const { token, cookieOptions } = await signJWT({ user: req.user });
+
+  res.cookie("token", token, cookieOptions);
 
   res.status(200).json({
     status: "success",
@@ -278,7 +295,10 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
   await existingUser.save();
 
-  const token = await signJWT({ user: existingUser });
+  const { token, cookieOptions } = await signJWT({ user: existingUser });
+
+  res.cookie("token", token, cookieOptions);
+
   res.status(200).json({
     status: "success",
     token,
