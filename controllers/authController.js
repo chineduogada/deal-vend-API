@@ -25,6 +25,7 @@ const signJWT = async ({ user, payload }) => {
   const cookieOptions = {
     expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     httpOnly: true,
+    sameSite: "lax",
   };
 
   if (process.env.NODE_ENV === "production") {
@@ -126,7 +127,7 @@ exports.login = catchAsync(async (req, res, next) => {
 });
 
 exports.logout = catchAsync(async (_req, res) => {
-  res.clearCookie();
+  res.clearCookie("token");
 
   res.status(200).json({
     status: "success",
@@ -138,13 +139,13 @@ exports.protect = catchAsync(async (req, _res, next) => {
 
   if (req.cookies.token) {
     token = req.cookies.token;
-  } else if (
-    (req.headers.authorization &&
-      req.headers.authorization.startsWith("Bearer")) ||
-    res.cookies.token
-  ) {
-    token = req.headers.authorization.replace("Bearer ", "");
   }
+  // else if (
+  //   req.headers.authorization &&
+  //   req.headers.authorization.startsWith("Bearer")
+  // ) {
+  //   token = req.headers.authorization.replace("Bearer ", "");
+  // }
 
   if (!token) {
     return next(
