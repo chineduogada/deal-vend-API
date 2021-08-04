@@ -86,7 +86,6 @@ exports.signUp = catchAsync(async (req, res, next) => {
 
   res.status(201).json({
     status: "success",
-    token,
     data: {
       user,
     },
@@ -122,7 +121,6 @@ exports.login = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: "success",
-    token,
   });
 });
 
@@ -226,7 +224,6 @@ exports.changeMyPassword = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: "success",
-    token,
   });
 });
 
@@ -301,7 +298,6 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: "success",
-    token,
   });
 });
 
