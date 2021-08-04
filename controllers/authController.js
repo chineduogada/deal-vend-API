@@ -25,10 +25,13 @@ const signJWT = async ({ user, payload }) => {
   const cookieOptions = {
     expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     httpOnly: true,
-    sameSite: "none",
   };
 
+  if (process.env.NODE_ENV === "development") {
+    cookieOptions.sameSite = "lax";
+  }
   if (process.env.NODE_ENV === "production") {
+    cookieOptions.sameSite = "none";
     cookieOptions.secure = true;
   }
 
