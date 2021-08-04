@@ -28,7 +28,11 @@ const signJWT = async ({ user, payload }) => {
     sameSite: "none",
   };
 
+  if (process.env.NODE_ENV === "development") {
+    cookieOptions.sameSite = "lax";
+  }
   if (process.env.NODE_ENV === "production") {
+    cookieOptions.sameSite = "none";
     cookieOptions.secure = true;
   }
 
@@ -86,7 +90,6 @@ exports.signUp = catchAsync(async (req, res, next) => {
 
   res.status(201).json({
     status: "success",
-    token,
     data: {
       user,
     },
@@ -122,7 +125,6 @@ exports.login = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: "success",
-    token,
   });
 });
 
@@ -226,7 +228,6 @@ exports.changeMyPassword = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: "success",
-    token,
   });
 });
 
@@ -301,7 +302,6 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: "success",
-    token,
   });
 });
 
