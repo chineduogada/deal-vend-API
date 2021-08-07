@@ -1,7 +1,7 @@
 const authController = require("../controllers/authController");
 const productController = require("../controllers/productController");
 const productMiddleware = require("../middlewares/productMiddleware");
-const customerFeedbackRouter = require("../routes/customerFeedbackRouter");
+const customerFeedbackRouter = require("./customerFeedbackRouter");
 const router = require("express").Router();
 
 router.use("/:productId/customer-feedbacks", customerFeedbackRouter);

@@ -114,9 +114,16 @@ exports.updateOne = (Model, docName = "document", schema, filterField) =>
 
 exports.deleteOne = (Model, docName = "document", filterField) =>
   catchAsync(async (req, res, next) => {
-    const doc = filterField
-      ? await Model.findOneAndRemove({ [filterField]: req.params[filterField] })
-      : await Model.findByIdAndRemove(req.params.id);
+    const doc =
+      req.filterOptions || filterField
+        ? await Model.findOneAndRemove(
+            req.filterOptions || {
+              [filterField]: req.params[filterField],
+            }
+          )
+        : await Model.findByIdAndRemove(req.params.id);
+
+    console.log(req.params.id);
 
     if (!doc) {
       return next(

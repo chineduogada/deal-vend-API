@@ -8,9 +8,9 @@
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const productRouter = require("./routes/productRouter");
+const productRouter = require("./routes/cartRouter");
 const userRouter = require("./routes/userRouter");
-const customerFeedbackRouter = require("./routes/customerFeedbackRouter");
+const cartRouter = require("./routes/cartRouter");
 const errorController = require("./controllers/errorController");
 const AppError = require("./utils/AppError");
 
@@ -23,7 +23,7 @@ app.use(cookieParser());
 // Routes
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/products", productRouter);
-// app.use("/api/v1/customer-feedbacks", customerFeedbackRouter);
+app.use("/api/v1/cart", cartRouter);
 
 app.use("*", (req, _res, next) => {
   next(
